@@ -1,0 +1,1336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+    />
+    <title>EarnMaster Pro – Complete & Earn</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon-1.png') }}" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/static/css/app.css" />
+
+    <style>
+      .auth-legal-links {
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .auth-legal-links a {
+        font-size: 13px;
+        font-weight: 700;
+        color: #6d5efc;
+        text-decoration: none;
+      }
+
+      .auth-legal-links a:hover {
+        text-decoration: underline;
+      }
+
+      .meSectionTitle {
+        margin: 0 0 12px;
+        font-size: 15px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .meLegalLinks {
+        display: grid;
+        gap: 10px;
+      }
+
+      .meLegalLink {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.94);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .meLegalLink span:last-child {
+        opacity: 0.72;
+        font-size: 13px;
+      }
+    
+
+      .messagesPage {
+        display: none;
+        padding-bottom: 100px;
+      }
+
+      .messagesShell {
+        display: grid;
+        gap: 14px;
+      }
+
+      .messagesHeaderCard {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 16px;
+        border-radius: 22px;
+        background:
+          radial-gradient(circle at top left, rgba(109, 94, 252, 0.18), transparent 28%),
+          radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 32%),
+          linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.94));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(14px);
+      }
+
+      .messagesHeaderMain {
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .messagesHeaderActions {
+        display: grid;
+        gap: 10px;
+        min-width: 130px;
+        justify-items: end;
+      }
+
+      .messagesUnreadPill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.94);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .messagesUnreadPill b {
+        min-width: 24px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #6d5efc, #22c55e);
+        color: #fff;
+      }
+
+      .messagesActionRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .messagesHeaderActionBtn {
+        min-width: 92px;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 900;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.92);
+        cursor: pointer;
+        transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+      }
+
+      .messagesHeaderActionBtn:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .messagesHeaderActionBtn.danger {
+        background: rgba(239, 68, 68, 0.14);
+        border-color: rgba(239, 68, 68, 0.24);
+        color: #fecaca;
+      }
+
+      .messagesToolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 4px 2px 0;
+      }
+
+      .messagesToolbarHint {
+        font-size: 12px;
+        color: rgba(148, 163, 184, 0.82);
+      }
+
+      .messagesFilters {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+      }
+
+      .messagesFilters::-webkit-scrollbar {
+        display: none;
+      }
+
+      .messageFilterChip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 0 0 auto;
+        border-radius: 999px;
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+      }
+
+      .messageFilterChip b {
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .messageFilterChip.active {
+        background: linear-gradient(135deg, rgba(109, 94, 252, 0.28), rgba(37, 99, 235, 0.24));
+        border-color: rgba(109, 94, 252, 0.45);
+        color: #ffffff;
+      }
+
+      .messageFilterChip:hover {
+        transform: translateY(-1px);
+      }
+
+      .messagesList {
+        display: grid;
+        gap: 10px;
+      }
+
+      .messagesLoadingCard,
+      .msgCard {
+        width: 100%;
+        text-align: left;
+        border-radius: 18px;
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.93));
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+      }
+
+      .msgCard {
+        position: relative;
+        display: grid;
+        gap: 10px;
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
+      }
+
+      .msgCard:hover,
+      .msgCard:focus-visible {
+        transform: translateY(-1px);
+        border-color: rgba(109, 94, 252, 0.35);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+      }
+
+      .msgCard.isRead {
+        opacity: 0.74;
+        filter: saturate(0.84) brightness(0.94);
+      }
+
+      .msgCard.isUnread {
+        border-color: rgba(109, 94, 252, 0.24);
+        box-shadow: 0 16px 32px rgba(109, 94, 252, 0.06), 0 12px 26px rgba(0, 0, 0, 0.22);
+      }
+
+      .msgTop {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .msgTitleBlock {
+        display: grid;
+        gap: 7px;
+        min-width: 0;
+      }
+
+      .msgTopRight {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      .msgCategory,
+      .messageDetailCategory,
+      .messageActionMeta {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        width: fit-content;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+      }
+
+      .tone-pending {
+        background: rgba(245, 158, 11, 0.14);
+        color: #fbbf24;
+      }
+
+      .tone-approved,
+      .tone-level,
+      .tone-payment {
+        background: rgba(34, 197, 94, 0.14);
+        color: #86efac;
+      }
+
+      .tone-rejected {
+        background: rgba(239, 68, 68, 0.16);
+        color: #fca5a5;
+      }
+
+      .tone-system {
+        background: rgba(148, 163, 184, 0.14);
+        color: #cbd5e1;
+      }
+
+      .msgTitle {
+        font-size: 15px;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.98);
+        line-height: 1.35;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+      }
+
+      .msgTime {
+        font-size: 11px;
+        color: rgba(148, 163, 184, 0.8);
+        white-space: nowrap;
+      }
+
+      .msgBody {
+        font-size: 13px;
+        line-height: 1.55;
+        color: rgba(226, 232, 240, 0.86);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        min-height: 40px;
+      }
+
+      .msgFooter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .msgReadTag {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(203, 213, 225, 0.84);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .msgMiniMarkBtn,
+      .msgMenuBtn {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.82);
+        cursor: pointer;
+        transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+      }
+
+      .msgMiniMarkBtn {
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .msgMenuBtn {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .msgMiniMarkBtn:hover,
+      .msgMenuBtn:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .message-detail-modal {
+        max-width: 560px;
+        width: min(92vw, 560px);
+        position: relative;
+        padding: 44px 20px 18px;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.96));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 26px 48px rgba(0, 0, 0, 0.38);
+      }
+
+      .messageCloseBtn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 16px;
+      }
+
+      .messageDetailCategory {
+        margin-bottom: 10px;
+      }
+
+      .messageDetailTitle {
+        margin: 10px 0 8px;
+        font-size: 22px;
+        line-height: 1.2;
+        color: rgba(255, 255, 255, 0.98);
+      }
+
+      .messageDetailMeta {
+        font-size: 12px;
+        color: rgba(148, 163, 184, 0.82);
+        margin-bottom: 14px;
+      }
+
+      .messageDetailBody {
+        font-size: 14px;
+        line-height: 1.7;
+        color: rgba(226, 232, 240, 0.9);
+        white-space: pre-wrap;
+      }
+
+      .message-action-sheet {
+        max-width: 440px;
+        width: min(92vw, 440px);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.96));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 26px 48px rgba(0, 0, 0, 0.36);
+      }
+
+      .messageActionHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .messageActionTitle {
+        font-size: 16px;
+        font-weight: 900;
+      }
+
+      .messageActionBody {
+        display: grid;
+        gap: 14px;
+      }
+
+      .messageActionButtons {
+        display: grid;
+        gap: 10px;
+      }
+
+      .messageActionBtn {
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.94);
+        border-radius: 16px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-weight: 800;
+        text-align: left;
+        cursor: pointer;
+        transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+      }
+
+      .messageActionBtn:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .messageActionBtn.primary {
+        background: linear-gradient(135deg, rgba(109, 94, 252, 0.28), rgba(37, 99, 235, 0.24));
+        border-color: rgba(109, 94, 252, 0.4);
+      }
+
+      .messageActionBtn.danger {
+        background: rgba(239, 68, 68, 0.16);
+        border-color: rgba(239, 68, 68, 0.26);
+        color: #fecaca;
+      }
+
+      .messageActionBtn.muted {
+        color: rgba(203, 213, 225, 0.88);
+      }
+
+      .message-detail-open {
+        overflow: hidden;
+      }
+
+
+    
+
+      /* --- Latest task + messages fixes --- */
+      .navMessagesItem {
+        position: relative;
+        overflow: visible;
+      }
+      .navMessagesItem .navIconWrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      overflow: visible;
+      .navMessagesItem .navBadge,
+      .navMessagesItem #messagesBadge {
+        position: absolute;
+        top: -7px;
+        right: -12px;
+        transform: none;
+        min-width: 24px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #6d5efc, #22c55e);
+        color: #fff;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+        z-index: 4;
+        pointer-events: none;
+        font-size: 11px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        box-sizing: border-box;
+      }
+      .messagesFilters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .messagesFilters::-webkit-scrollbar {
+        display: none;
+      }
+      .messageFilterChip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+      .msgCard.isRead {
+        opacity: 0.58;
+        filter: saturate(0.78) brightness(0.88);
+      }
+      .msgCard.isRead .msgTitle,
+      .msgCard.isRead .msgBody {
+        color: rgba(226, 232, 240, 0.7);
+      }
+      .msgCard.isUnread {
+        border-color: rgba(109, 94, 252, 0.26);
+      }
+      .messagesHeaderActionBtn {
+        min-width: 92px;
+      }
+      .messagesHeaderCard {
+        flex-wrap: wrap;
+      }
+      .messageCloseBtn {
+        z-index: 3;
+      }
+      #methodModal select,
+      .form-group select,
+      .auth-container select {
+        background: rgba(10, 15, 26, 0.95);
+        color: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+      }
+      #methodModal select option,
+      .form-group select option,
+      .auth-container select option {
+        background: #0b1020;
+        color: #ffffff;
+      }
+      @media (max-width: 420px) {
+        #messagesPage .messagesHeaderCard {
+          flex-direction: column;
+        }
+        #messagesPage .messagesHeaderActions {
+          width: 100%;
+          justify-items: stretch;
+        }
+        #messagesPage .messagesActionRow {
+          width: 100%;
+          justify-content: flex-start;
+        }
+        #messagesPage .messagesHeaderActionBtn {
+          min-width: 0;
+          flex: 1 1 0;
+        }
+      }
+
+      .navMessagesItem {
+       position: relative;
+      overflow: visible;
+      }
+
+      .navMessagesItem #messagesBadge,
+      .navMessagesItem .navBadge {
+       position: absolute;
+       top: 6px;
+       right: 10px;
+       transform: translate(55%, -45%);
+       min-width: 20px;
+       height: 20px;
+       padding: 0 6px;
+       box-sizing: border-box;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 999px;
+       font-size: 11px;
+       font-weight: 900;
+       line-height: 1;
+       white-space: nowrap;
+       overflow: visible;
+       z-index: 5;
+      }
+
+
+      .auth-name-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .auth-name-grid .form-group {
+        margin-bottom: 0;
+      }
+      @media (max-width: 560px) {
+        .auth-name-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Registration -->
+    <div id="registerPage" class="auth-container auth-experience auth-register">
+      <section class="auth-showcase" aria-labelledby="registerHeroTitle">
+        <div class="auth-panel-lines" aria-hidden="true"></div>
+        <div class="auth-brand-row">
+          <div class="auth-brand-mark" aria-hidden="true">
+            <i class="fas fa-crown"></i>
+          </div>
+          <div>
+            <div class="auth-brand-name">EarnMaster Pro</div>
+            <div class="auth-brand-sub">Verified earning studio</div>
+          </div>
+        </div>
+
+        <div class="auth-showcase-copy">
+          <span class="auth-kicker"><i class="fas fa-shield-halved" aria-hidden="true"></i> Private onboarding</span>
+          <h1 id="registerHeroTitle">Enter the earning floor with intent.</h1>
+          <p>
+            A refined workspace for level progress, Paystack deposits, and clean reward visibility.
+          </p>
+        </div>
+
+        <div class="auth-register-stage" aria-hidden="true">
+          <div class="auth-ledger">
+            <div class="auth-card-glow"></div>
+            <div class="auth-ledger-head">
+              <span>Access review</span>
+              <strong><i class="fas fa-lock-open"></i> Open</strong>
+            </div>
+            <div class="auth-ledger-balance">
+              <span>Starter workspace</span>
+              <b>Ready</b>
+            </div>
+            <div class="auth-ledger-row">
+              <span>Unlock capital</span>
+              <b>GHS 120.00</b>
+            </div>
+            <div class="auth-ledger-row">
+              <span>Completion target</span>
+              <b>GHS 276.00</b>
+            </div>
+            <div class="auth-progress-line"><span></span></div>
+            <div class="auth-micro-status">
+              <span><i class="fas fa-circle"></i> Paystack payments monitored</span>
+              <span>72%</span>
+            </div>
+          </div>
+          <div class="auth-insight-grid" aria-label="EarnMaster highlights">
+            <div class="auth-insight">
+              <i class="fas fa-stopwatch" aria-hidden="true"></i>
+              <span>Secure</span>
+              <b>Paystack checkout</b>
+            </div>
+            <div class="auth-insight">
+              <i class="fas fa-mobile-screen" aria-hidden="true"></i>
+              <span>MoMo</span>
+              <b>Network payment lane</b>
+            </div>
+            <div class="auth-insight">
+              <i class="fas fa-signal" aria-hidden="true"></i>
+              <span>Live</span>
+              <b>Progress sync</b>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-form-panel" aria-labelledby="registerFormTitle">
+        <div class="auth-form-header">
+          <span class="auth-form-kicker">Create account</span>
+          <h2 id="registerFormTitle">Start from a sharper profile.</h2>
+          <p>Your phone number anchors deposits, levels, recovery, and account review to one identity.</p>
+        </div>
+
+        <div class="auth-name-grid">
+          <div class="form-group">
+            <label for="regFirstName">First name *</label>
+            <div class="auth-input-shell">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input
+                type="text"
+                id="regFirstName"
+                autocomplete="given-name"
+                placeholder="Kwame"
+              />
+            </div>
+            <div class="helper-text">Required</div>
+          </div>
+
+          <div class="form-group">
+            <label for="regSurname">Surname</label>
+            <div class="auth-input-shell">
+              <i class="fas fa-id-badge" aria-hidden="true"></i>
+              <input
+                type="text"
+                id="regSurname"
+                autocomplete="family-name"
+                placeholder="Mensah"
+              />
+            </div>
+            <div class="helper-text">Optional</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPhone">Phone number</label>
+          <div class="auth-input-shell">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <input
+              type="tel"
+              id="regPhone"
+              inputmode="numeric"
+              autocomplete="tel"
+              placeholder="0XXXXXXXXX"
+              maxlength="10"
+            />
+          </div>
+          <div class="helper-text">Must be 10 digits and start with 0</div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <div class="auth-input-shell">
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            <input type="password" id="regPassword" autocomplete="new-password" placeholder="Create password" />
+            <button
+              class="auth-password-toggle"
+              type="button"
+              aria-label="Show password"
+              aria-pressed="false"
+              data-password-toggle="regPassword"
+              data-password-label="password"
+            >
+              <i class="fas fa-eye-slash" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regConfirmPassword">Confirm password</label>
+          <div class="auth-input-shell">
+            <i class="fas fa-shield-halved" aria-hidden="true"></i>
+            <input
+              type="password"
+              id="regConfirmPassword"
+              autocomplete="new-password"
+              placeholder="Confirm password"
+            />
+            <button
+              class="auth-password-toggle"
+              type="button"
+              aria-label="Show confirm password"
+              aria-pressed="false"
+              data-password-toggle="regConfirmPassword"
+              data-password-label="confirm password"
+            >
+              <i class="fas fa-eye-slash" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="registerError" class="error-message" style="display:none;"></div>
+
+        <button class="btn-primary auth-submit-btn" id="registerBtn">
+          <span>Create account</span>
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-link">
+          Already a member?
+          <a href="#" id="showLoginLink">Sign in</a>
+        </div>
+
+        <div class="auth-legal-links">
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Login -->
+    <div id="loginPage" class="auth-container auth-experience auth-login" style="display: none">
+      <section class="auth-showcase" aria-labelledby="loginHeroTitle">
+        <div class="auth-panel-lines" aria-hidden="true"></div>
+        <div class="auth-brand-row">
+          <div class="auth-brand-mark" aria-hidden="true">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <div>
+            <div class="auth-brand-name">EarnMaster Pro</div>
+            <div class="auth-brand-sub">Task command center</div>
+          </div>
+        </div>
+
+        <div class="auth-showcase-copy">
+          <span class="auth-kicker"><i class="fas fa-fingerprint" aria-hidden="true"></i> Secure return</span>
+          <h1 id="loginHeroTitle">Resume from the control room.</h1>
+          <p>
+            Step back into your wallet, active level, payment status, task queue, and platform messages.
+          </p>
+        </div>
+
+        <div class="auth-command-deck" aria-hidden="true">
+          <div class="auth-card-glow"></div>
+          <div class="auth-command-top">
+            <span>Active workspace</span>
+            <strong>Level 4</strong>
+          </div>
+          <div class="auth-ledger-balance">
+            <span>Dashboard state</span>
+            <b>Protected</b>
+          </div>
+          <div class="auth-command-meter"><span></span></div>
+          <div class="auth-micro-status">
+            <span><i class="fas fa-circle"></i> Session recovery ready</span>
+            <span>86%</span>
+          </div>
+          <div class="auth-task-stack">
+            <span><i class="fas fa-check"></i> Base tasks synced</span>
+            <span><i class="fas fa-clock"></i> Payment review live</span>
+            <span><i class="fas fa-wallet"></i> Wallet protected</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-form-panel" aria-labelledby="loginFormTitle">
+        <div class="auth-form-header">
+          <span class="auth-form-kicker">Sign in</span>
+          <h2 id="loginFormTitle">Open your dashboard.</h2>
+          <p>Your session restores the same earning workspace and account controls.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPhone">Phone number</label>
+          <div class="auth-input-shell">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <input
+              type="tel"
+              id="loginPhone"
+              inputmode="numeric"
+              autocomplete="tel"
+              placeholder="0XXXXXXXXX"
+              maxlength="10"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="auth-input-shell">
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            <input
+              type="password"
+              id="loginPassword"
+              autocomplete="current-password"
+              placeholder="Enter password"
+            />
+            <button
+              class="auth-password-toggle"
+              type="button"
+              aria-label="Show password"
+              aria-pressed="false"
+              data-password-toggle="loginPassword"
+              data-password-label="password"
+            >
+              <i class="fas fa-eye-slash" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="loginError" class="error-message" style="display:none;"></div>
+
+        <button class="btn-primary auth-submit-btn" id="loginBtn">
+          <span>Sign in</span>
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+
+        <div class="auth-link">
+          New here?
+          <a href="#" id="showRegisterLink">Create account</a>
+        </div>
+
+        <div class="auth-legal-links">
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- App -->
+    <div id="appContainer" class="app-container" style="display: none">
+      <div id="pageContent" class="page-content">
+        <!-- HOME -->
+        <div id="homePage">
+          <div class="homeShell">
+            <div class="homeHeader">
+              <div class="brandRow">
+                <div class="brandLogo homeAvatarWrap" id="homeAvatarWrap" aria-label="Profile avatar">
+                <img id="homeAvatarImg" class="avatarImage" alt="Profile avatar" />
+                <i class="fas fa-user brandLogoFallback" id="homeAvatarFallback"></i>
+              </div>
+                <div class="brandText">
+                  <div class="appName">EarnMaster Pro</div>
+                  <div class="welcomeLine" id="homeWelcomeLine">
+                    Welcome back
+                  </div>
+                </div>
+              </div>
+
+              <div class="statusPill status-locked" id="homeStatusPill">
+                <span class="statusDot bad" id="homeStatusDot"></span>
+                <span id="homeStatusText">Locked</span>
+              </div>
+            </div>
+
+            <div class="heroCard premium-sheen">
+              <div class="heroGlow"></div>
+              <div class="heroGlow2"></div>
+
+              <div class="heroTopRow">
+                <div class="hero-left-col">
+                  <div class="small-label">Your dashboard</div>
+                  <div class="heroSlides" id="heroSlides"></div>
+                </div>
+
+                <div class="hero-right-col">
+                  <div class="small-label">Today</div>
+                  <div class="today-label" id="homeTodayLabel"></div>
+                </div>
+              </div>
+
+              <div class="kpisRow">
+                <div class="kpiCard">
+                  <div class="kpiLabel">Your Balance</div>
+                  <div class="kpiValue" id="homeBalance">0 GHS</div>
+                </div>
+                <div class="kpiCard">
+                  <div class="kpiLabel">Premium Access</div>
+                  <div class="kpiValue status-locked" id="homeDepositStatus">Locked</div>
+                </div>
+              </div>
+
+              <div class="quickActionsRow">
+                <div class="qAction" id="quickTasks">
+                  <div class="icon"><i class="fas fa-tasks"></i></div>
+                  <div class="title">Go to Tasks</div>
+                  <div class="sub">Start earning now</div>
+                </div>
+
+                <div class="qAction" id="quickDeposit">
+                  <div class="icon deposit-icon">
+                    <i class="fas fa-credit-card"></i>
+                  </div>
+                  <div class="title">Unlock / Pay</div>
+                  <div class="sub">Linked to task levels</div>
+                </div>
+
+                <div class="qAction" id="quickWithdraw">
+                  <div class="icon withdraw-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                  </div>
+                  <div class="title">Withdraw</div>
+                  <div class="sub">Request payout</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="homeActiveLevelMount"></div>
+
+            <div class="withdrawReelsCard">
+              <div class="sectionHeader">
+                <div class="title">Recent Withdrawals</div>
+                <div class="hint">Live payouts</div>
+              </div>
+              <div class="reelsViewport" id="reelsViewport">
+                <div class="reelsTrack" id="reelsTrack"></div>
+              </div>
+            </div>
+
+            <div class="trustStrip">
+              <div>
+                <div class="tTitle">Simple flow, clear rewards</div>
+                <div class="tText">
+                  Complete tasks → Earn rewards → Request withdrawal. Clean
+                  tracking inside Messages.
+                </div>
+              </div>
+              <div class="tIcon"><i class="fas fa-shield-alt"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TASKS -->
+        <section id="tasksPage" class="appPage"></section>
+
+        <!-- DEPOSIT -->
+        <section id="depositPage" class="appPage"></section>
+
+        <!-- WITHDRAWAL -->
+        <section id="withdrawalPage" class="appPage"></section>        <!-- MESSAGES -->
+        <div id="messagesPage" class="messagesPage" style="display: none">
+          <div class="messagesShell">
+            <div class="messagesHeaderCard">
+              <div class="messagesHeaderMain">
+                <div>
+                  <h2 class="pageTitle">Messages</h2>
+                  <p class="pageSub">
+                    Important account updates, withdrawal actions, payments, and system notices appear here.
+                  </p>
+                </div>
+              </div>
+
+              <div class="messagesHeaderActions">
+                <div class="messagesUnreadPill">
+                  <span>Unread</span>
+                  <b id="messagesUnreadCount">0</b>
+                </div>
+                <div class="messagesActionRow">
+                  <button id="messagesReadAllBtn" class="messagesHeaderActionBtn" type="button">
+                    Read All
+                  </button>
+                  <button id="messagesDeleteAllBtn" class="messagesHeaderActionBtn danger" type="button">
+                    Delete All
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="messagesToolbar">
+              <div id="messagesFilters" class="messagesFilters"></div>
+              <div class="messagesToolbarHint">
+                Tip: Long-press a message for quick actions. Read messages are gently muted.
+              </div>
+            </div>
+
+            <div id="messagesList" class="messagesList"></div>
+          </div>
+        </div>
+
+        <!-- ME -->
+        <div id="mePage" style="display: none">
+          <div class="pageTitle">Me</div>
+          <div class="pageSub">Account overview</div>
+
+          <div class="meCard meProfileCard">
+            <div class="meProfileHeader">
+              <button type="button" class="meProfileAvatar meAvatarBtn" id="meAvatarBtn" aria-label="Change avatar">
+              <img id="meAvatarImg" class="avatarImage" alt="Profile avatar" />
+              <i class="fas fa-user meAvatarFallback" id="meAvatarFallback"></i>
+            </button>
+              <div>
+                <div class="meProfileName" id="meProfileName">Account</div>
+                <div class="meProfileSub" id="meProfileSub">Mobile-first account snapshot</div>
+              </div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-id-card"></i> User ID</div>
+              <div class="meValue meCopyValue">
+                <span id="meUser">-</span>
+                <button type="button" id="meUserCopyBtn" class="meCopyBtn" aria-label="Copy user ID">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-phone"></i> Phone</div>
+              <div class="meValue" id="mePhone">-</div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-wallet"></i> Balance</div>
+              <div class="meValue" id="meBalance">0 GHS</div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-crown"></i> Premium Access</div>
+              <div class="meValue" id="mePremiumAccess">Locked</div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-calendar-days"></i> Joined</div>
+              <div class="meValue" id="meJoined">-</div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-hourglass-half"></i> Pending withdrawals</div>
+              <div class="meValue" id="mePendingWithdrawals">0</div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-money-bill-transfer"></i> Pending value</div>
+              <div class="meValue" id="mePendingWithdrawalTotal">0 GHS</div>
+            </div>
+
+            <div class="meRow">
+              <div class="meLabel"><i class="fas fa-signal"></i> Account status</div>
+              <div class="meValue" id="meAccountStatus">Active</div>
+            </div>
+          </div>
+
+          <div class="meCard">
+            <div class="meSectionTitle">Legal & Support</div>
+            <div class="meLegalLinks">
+              <a class="meLegalLink" href="/terms">
+                <span>Terms of Use</span>
+                <span><i class="fas fa-chevron-right"></i></span>
+              </a>
+              <a class="meLegalLink" href="/privacy">
+                <span>Privacy Policy</span>
+                <span><i class="fas fa-chevron-right"></i></span>
+              </a>
+              <a class="meLegalLink" href="/contact">
+                <span>Contact & Support</span>
+                <span><i class="fas fa-chevron-right"></i></span>
+              </a>
+            </div>
+          </div>
+
+          <button class="logoutBtn" id="logoutBtn">
+            <i class="fas fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="bottom-nav">
+        <div class="nav-item active" data-page="home">
+          <i class="fas fa-home"></i><span>Home</span>
+        </div>
+        <div class="nav-item" data-page="tasks">
+          <i class="fas fa-tasks"></i><span>Tasks</span>
+        </div>
+        <div class="nav-item" data-page="deposit">
+          <i class="fas fa-credit-card"></i><span>Pay</span>
+        </div>
+        <div class="nav-item" data-page="withdrawal">
+          <i class="fas fa-money-bill-wave"></i><span>Withdraw</span>
+        </div>
+        <div class="nav-item navMessagesItem" data-page="messages">
+          <span class="navIconWrap">
+            <i class="fas fa-envelope"></i>
+            <span id="messagesBadge" class="navBadge" style="display:none;">0</span>
+          </span>
+          <span>Messages</span>
+        </div>
+        <div class="nav-item" data-page="me">
+          <i class="fas fa-user"></i><span>Me</span>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="messageDetailModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content message-detail-modal">
+        <button type="button" class="messageCloseBtn" aria-label="Close message">
+          <i class="fas fa-xmark"></i>
+        </button>
+        <div class="messageDetailCategory" id="messageDetailCategory"></div>
+        <h2 class="messageDetailTitle" id="messageDetailTitle"></h2>
+        <div class="messageDetailMeta">
+          <span id="messageDetailTime"></span>
+        </div>
+        <div class="messageDetailBody" id="messageDetailBody"></div>
+      </div>
+    </div>
+
+    <div id="welcomePopupModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content welcomePopupModalContent" role="dialog" aria-modal="true">
+        <button type="button" class="messageCloseBtn" id="welcomePopupCloseBtn" aria-label="Close welcome message">
+          <i class="fas fa-xmark"></i>
+        </button>
+        <div class="welcomePopupBadge"><i class="fas fa-bolt"></i> Welcome</div>
+        <h2 class="welcomePopupTitle">Complete tasks, earn rewards, and withdraw once eligible.</h2>
+        <p class="welcomePopupText">Start with the tasks that are available to you, earn from each completed action, and keep an eye on your balance inside Messages.</p>
+        <label class="welcomePopupCheckRow" for="welcomePopupNeverShow">
+          <input type="checkbox" id="welcomePopupNeverShow" />
+          <span>Don’t show this again</span>
+        </label>
+        <button type="button" class="btn-primary welcomePopupCta" id="welcomePopupDoneBtn">Got it</button>
+      </div>
+    </div>
+
+    <!-- Add Withdrawal Method Modal -->
+    <div id="methodModal" class="modal-overlay" style="display: none">
+      <div class="modal-content" id="methodModalContent">
+        <h2>Add Withdrawal Method</h2>
+
+        <div class="form-group">
+          <label>Network</label>
+          <select id="methodNetwork">
+            <option value="MTN">MTN</option>
+            <option value="TELECEL">TELECEL</option>
+            <option value="TIGO">TIGO</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Account Number</label>
+          <input
+            type="tel"
+            id="methodNumber"
+            inputmode="numeric"
+            placeholder="0XXXXXXXXX"
+            maxlength="10"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Account Name</label>
+          <input type="text" id="methodName" placeholder="Enter name" />
+        </div>
+
+        <div class="form-group">
+          <label>6-Digit Security PIN</label>
+          <input
+            type="password"
+            id="methodPin"
+            maxlength="6"
+            inputmode="numeric"
+            placeholder="******"
+          />
+        </div>
+
+        <button class="btn-primary" id="addMethodBtn">Add Method</button>
+
+        <div class="modal-note">
+          Max 2 withdrawal methods per user. Any PIN saved here is stored
+          securely and never sent back to the browser.
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js" defer></script>
+    <script src="/static/js/level-system-bootstrap.js" defer></script>
+    <script src="/static/js/tasks/tasks-board.js" defer></script>
+    <script src="/static/js/tasks/level-detail.js" defer></script>
+    <script src="/static/js/tasks/task-runner.js" defer></script>
+    <script src="/static/js/payments/paystack.js" defer></script>
+    <script src="/static/js/withdrawal/withdrawal.js" defer></script>
+  </body>
+</html>

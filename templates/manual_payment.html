@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manual MTN Payment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080a0c;
+        --panel: #101418;
+        --panel-strong: #151b20;
+        --line: rgba(255, 255, 255, 0.12);
+        --line-strong: rgba(255, 255, 255, 0.2);
+        --text: #f7faf8;
+        --muted: #a8b3ad;
+        --soft: #d6ded8;
+        --accent: #35d07f;
+        --accent-dark: #15a860;
+        --warn: #f5b84b;
+        --danger: #ff6b6b;
+        --info: #72a7ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          linear-gradient(145deg, rgba(53, 208, 127, 0.12), transparent 34%),
+          linear-gradient(315deg, rgba(245, 184, 75, 0.08), transparent 30%),
+          var(--bg);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 22px;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .manualShell {
+        width: min(100%, 720px);
+        animation: pageIn 420ms ease both;
+      }
+
+      .manualPanel {
+        background: rgba(16, 20, 24, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+        overflow: hidden;
+        backdrop-filter: blur(18px);
+      }
+
+      .manualHeader {
+        padding: 24px;
+        border-bottom: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .brandRow,
+      .trustChip,
+      .autoCheck,
+      .timerBadge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .manualHeaderActions {
+        display: grid;
+        gap: 10px;
+        justify-items: stretch;
+      }
+
+      .brandIcon {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #07100b;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(53, 208, 127, 0.12);
+      }
+
+      .brandText {
+        color: var(--soft);
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: 0;
+      }
+
+      .manualTitle {
+        margin: 18px 0 0;
+        font-size: clamp(24px, 5vw, 34px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .manualSub {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+        max-width: 56ch;
+      }
+
+      .timerBadge {
+        min-width: 124px;
+        justify-content: center;
+        border: 1px solid rgba(114, 167, 255, 0.35);
+        border-radius: 8px;
+        background: rgba(114, 167, 255, 0.11);
+        color: #dce8ff;
+        padding: 11px 13px;
+        font-weight: 900;
+        transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+      }
+
+      .homeLink {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.045);
+        color: var(--soft);
+        font-size: 13px;
+        font-weight: 900;
+        text-decoration: none;
+        transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+      }
+
+      .homeLink:hover,
+      .homeLink:focus-visible {
+        background: rgba(255, 255, 255, 0.075);
+        border-color: var(--line-strong);
+        outline: none;
+        transform: translateY(-1px);
+      }
+
+      .timerBadge.warning {
+        border-color: rgba(245, 184, 75, 0.45);
+        background: rgba(245, 184, 75, 0.14);
+        color: #ffe2a7;
+      }
+
+      .timerBadge.expired {
+        border-color: rgba(255, 107, 107, 0.45);
+        background: rgba(255, 107, 107, 0.14);
+        color: #ffd0d0;
+      }
+
+      .timerLabel {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .manualBody {
+        padding: 24px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .statusBox {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        border-radius: 8px;
+        padding: 14px;
+        background: rgba(245, 184, 75, 0.12);
+        border: 1px solid rgba(245, 184, 75, 0.28);
+        color: #ffe2a7;
+        font-weight: 800;
+        line-height: 1.45;
+        transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+      }
+
+      .statusBox.success {
+        background: rgba(53, 208, 127, 0.12);
+        border-color: rgba(53, 208, 127, 0.34);
+        color: #c9f7dc;
+      }
+
+      .statusBox.failed {
+        background: rgba(255, 107, 107, 0.12);
+        border-color: rgba(255, 107, 107, 0.32);
+        color: #ffd0d0;
+      }
+
+      .statusIcon {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .accountBox {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 16px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(53, 208, 127, 0.15), rgba(114, 167, 255, 0.08));
+        border: 1px solid rgba(53, 208, 127, 0.26);
+      }
+
+      .detailLabel {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .accountNumber {
+        margin-top: 4px;
+        font-size: clamp(26px, 7vw, 42px);
+        line-height: 1;
+        font-weight: 900;
+        letter-spacing: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .detailGrid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .detailRow {
+        min-width: 0;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.035);
+        transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+      }
+
+      .detailRow:hover {
+        transform: translateY(-1px);
+        border-color: var(--line-strong);
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .detailValue {
+        margin-top: 6px;
+        min-width: 0;
+        color: var(--soft);
+        font-weight: 900;
+        overflow-wrap: anywhere;
+      }
+
+      .trustStrip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .trustChip {
+        min-height: 34px;
+        padding: 0 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--soft);
+        background: rgba(255, 255, 255, 0.035);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .instructions {
+        margin: 0;
+        padding: 16px 16px 16px 38px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        color: var(--soft);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .copyBtn,
+      .statusBtn,
+      .cancelBtn {
+        border: 0;
+        border-radius: 8px;
+        min-height: 44px;
+        padding: 0 16px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      }
+
+      .copyBtn {
+        color: #07100b;
+        background: var(--accent);
+        white-space: nowrap;
+      }
+
+      .statusBtn {
+        width: 100%;
+        color: #07100b;
+        background: var(--accent);
+        font-size: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+      }
+
+      .cancelBtn {
+        width: 100%;
+        margin-top: 10px;
+        color: #ffd0d0;
+        background: rgba(255, 107, 107, 0.13);
+        border: 1px solid rgba(255, 107, 107, 0.32);
+      }
+
+      .copyBtn:hover,
+      .statusBtn:hover {
+        background: #59dfa0;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(53, 208, 127, 0.22);
+      }
+
+      .cancelBtn:hover {
+        background: rgba(255, 107, 107, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .statusBtn:disabled,
+      .copyBtn:disabled,
+      .cancelBtn:disabled {
+        cursor: wait;
+        opacity: 0.78;
+        transform: none;
+      }
+
+      .cancelBtn[hidden] {
+        display: none;
+      }
+
+      .autoCheck {
+        justify-content: center;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .pulseDot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 0 rgba(53, 208, 127, 0.42);
+        animation: pulse 1500ms ease infinite;
+      }
+
+      @keyframes pageIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        70% {
+          box-shadow: 0 0 0 10px rgba(53, 208, 127, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(53, 208, 127, 0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        .pulseDot {
+          animation: none !important;
+        }
+      }
+
+      @media (max-width: 620px) {
+        body {
+          padding: 12px;
+        }
+
+        .manualHeader {
+          grid-template-columns: 1fr;
+          padding: 20px;
+        }
+
+        .timerBadge {
+          width: 100%;
+        }
+
+        .manualBody {
+          padding: 20px;
+        }
+
+        .accountBox,
+        .detailGrid {
+          grid-template-columns: 1fr;
+        }
+
+        .copyBtn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="manualShell">
+      <section class="manualPanel">
+        <header class="manualHeader">
+          <div>
+            <div class="brandRow">
+              <span class="brandIcon"><i class="fas fa-shield-halved"></i></span>
+              <span class="brandText">Secure manual payment review</span>
+            </div>
+            <h1 class="manualTitle">Complete your MTN payment</h1>
+            <p class="manualSub">
+              Send the exact amount to the account below. Once admin approves it, this page opens the unlocked level automatically.
+            </p>
+          </div>
+
+          <div class="manualHeaderActions">
+            <a class="homeLink" href="/" aria-label="Back to Home">
+              <i class="fas fa-house" aria-hidden="true"></i>
+              Back to Home
+            </a>
+            <div id="timerBadge" class="timerBadge">
+              <i class="fas fa-clock"></i>
+              <span>
+                <span class="timerLabel">Expires in</span>
+                <span id="timerText">10:00</span>
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <div class="manualBody">
+          <div id="statusBox" class="statusBox">
+            <span class="statusIcon" id="statusIcon"><i class="fas fa-hourglass-half"></i></span>
+            <span id="statusMessage">Loading manual payment details.</span>
+          </div>
+
+          <div class="accountBox">
+            <div>
+              <div class="detailLabel">MTN account number</div>
+              <div class="accountNumber" id="accountNumber">{{ account_number }}</div>
+            </div>
+            <button id="copyAccountBtn" class="copyBtn" type="button">
+              <i class="fas fa-copy"></i>
+              Copy number
+            </button>
+          </div>
+
+          <div class="detailGrid">
+            <div class="detailRow">
+              <div class="detailLabel">Network</div>
+              <div class="detailValue">{{ network_type }}</div>
+            </div>
+            <div class="detailRow">
+              <div class="detailLabel">Account name</div>
+              <div class="detailValue">{{ account_name }}</div>
+            </div>
+            <div class="detailRow">
+              <div class="detailLabel">Amount</div>
+              <div class="detailValue" id="amountValue">Loading...</div>
+            </div>
+            <div class="detailRow">
+              <div class="detailLabel">Reference</div>
+              <div class="detailValue" id="referenceValue">{{ reference }}</div>
+            </div>
+            <div class="detailRow">
+              <div class="detailLabel">Email</div>
+              <div class="detailValue" id="emailValue">Loading...</div>
+            </div>
+            <div class="detailRow">
+              <div class="detailLabel">Level</div>
+              <div class="detailValue" id="levelValue">Loading...</div>
+            </div>
+          </div>
+
+          <div class="trustStrip">
+            <span class="trustChip"><i class="fas fa-lock"></i> Admin reviewed</span>
+            <span class="trustChip"><i class="fas fa-receipt"></i> Reference tracked</span>
+            <span class="trustChip"><i class="fas fa-rotate"></i> Auto-checks every 10s</span>
+          </div>
+
+          <ol class="instructions">
+            <li>Send the exact amount shown on this page.</li>
+            <li>Use the payment reference or your registered email in the transaction note.</li>
+            <li>Keep this page open while admin confirms the payment.</li>
+            <li>Do not create another manual payment for the same level.</li>
+          </ol>
+
+          <button id="statusBtn" class="statusBtn" type="button">
+            <i class="fas fa-list-check"></i>
+            Open live status tracker
+          </button>
+          <button id="cancelPaymentBtn" class="cancelBtn" type="button" hidden>
+            <i class="fas fa-ban"></i>
+            Cancel payment
+          </button>
+          <div id="autoCheckText" class="autoCheck">
+            <span class="pulseDot"></span>
+            <span>Auto-checking approval status.</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const REFERENCE = {{ reference|tojson }};
+      const ACCOUNT_NUMBER = {{ account_number|tojson }};
+      const POLL_INTERVAL_MS = 10000;
+      const REDIRECT_DELAY_MS = 1300;
+
+      let currentPayment = null;
+      let expiryRefreshRequested = false;
+      let requestInFlight = false;
+      let redirectStarted = false;
+      let nextPollAt = Date.now() + POLL_INTERVAL_MS;
+
+      function parseServerDate(value) {
+        if (!value) return null;
+        const text = String(value);
+        const date = new Date(text.endsWith("Z") || text.includes("+") ? text : `${text}Z`);
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      function formatAmount(value) {
+        const amount = Number(value || 0);
+        return `${amount.toFixed(2)} GHS`;
+      }
+
+      function formatTime(seconds) {
+        const safe = Math.max(0, Number(seconds || 0));
+        const minutes = Math.floor(safe / 60);
+        const rest = safe % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+      }
+
+      function secondsRemaining() {
+        if (!currentPayment || currentPayment.status !== "pending") return 0;
+        const expiresAt = parseServerDate(currentPayment.expires_at);
+        if (!expiresAt) return Number(currentPayment.seconds_remaining || 0);
+        return Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+      }
+
+      function isStoppedStatus(status) {
+        return ["failed", "cancelled", "canceled"].includes(String(status || "").toLowerCase());
+      }
+
+      function setStatusMessage(payment, message) {
+        const box = document.getElementById("statusBox");
+        const text = document.getElementById("statusMessage");
+        const icon = document.getElementById("statusIcon");
+        box.classList.remove("success", "failed");
+
+        if (!payment) {
+          icon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+          text.textContent = message || "Loading manual payment details.";
+          return;
+        }
+
+        if (payment.status === "approved") {
+          box.classList.add("success");
+          icon.innerHTML = '<i class="fas fa-circle-check"></i>';
+          text.textContent = "Payment approved. Opening the unlocked level now.";
+          return;
+        }
+
+        if (payment.status === "failed") {
+          box.classList.add("failed");
+          icon.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
+          text.textContent = payment.failure_reason === "expired"
+            ? "Manual payment expired before approval. Start a new payment if you still want this level."
+            : "Manual payment failed. Start a new payment if you still want this level.";
+          return;
+        }
+
+        if (payment.status === "cancelled" || payment.status === "canceled") {
+          box.classList.add("failed");
+          icon.innerHTML = '<i class="fas fa-ban"></i>';
+          text.textContent = "Manual payment cancelled. Start a new payment if you still want this level.";
+          return;
+        }
+
+        icon.innerHTML = '<i class="fas fa-hourglass-half"></i>';
+        text.textContent = message || "Payment is pending and waiting for admin confirmation.";
+      }
+
+      function updateTimer() {
+        const badge = document.getElementById("timerBadge");
+        const text = document.getElementById("timerText");
+        if (currentPayment?.status === "cancelled" || currentPayment?.status === "canceled") {
+          text.textContent = "Cancelled";
+          badge.classList.remove("warning");
+          badge.classList.add("expired");
+          return;
+        }
+        const remaining = secondsRemaining();
+        text.textContent = formatTime(remaining);
+        badge.classList.toggle("warning", remaining > 0 && remaining <= 120);
+        badge.classList.toggle("expired", remaining <= 0 && currentPayment?.status !== "approved");
+
+        if (currentPayment?.status === "pending" && remaining <= 0 && !expiryRefreshRequested) {
+          expiryRefreshRequested = true;
+          loadPayment({ silent: true });
+        }
+      }
+
+      function updateAutoCheckText() {
+        const el = document.getElementById("autoCheckText");
+        if (!el) return;
+
+        if (redirectStarted) {
+          el.innerHTML = '<i class="fas fa-arrow-right"></i><span>Redirecting to your unlocked level.</span>';
+          return;
+        }
+
+        if (currentPayment?.status === "approved") {
+          el.innerHTML = '<i class="fas fa-circle-check"></i><span>Approved. Preparing your level workspace.</span>';
+          return;
+        }
+
+        if (isStoppedStatus(currentPayment?.status)) {
+          el.innerHTML = '<i class="fas fa-circle-xmark"></i><span>Auto-check stopped.</span>';
+          return;
+        }
+
+        const seconds = Math.max(0, Math.ceil((nextPollAt - Date.now()) / 1000));
+        el.innerHTML = `<span class="pulseDot"></span><span>Auto-checking again in ${seconds}s.</span>`;
+      }
+
+      function renderPaymentDetails(payment) {
+        document.getElementById("amountValue").textContent = formatAmount(payment.amount);
+        document.getElementById("referenceValue").textContent = payment.reference || REFERENCE;
+        document.getElementById("emailValue").textContent = payment.email || "";
+        document.getElementById("levelValue").textContent = payment.level_number
+          ? `Level ${payment.level_number}`
+          : "Not available";
+      }
+
+      function updateCancelButton(payment) {
+        const btn = document.getElementById("cancelPaymentBtn");
+        if (!btn) return;
+        const canCancel = Boolean(payment?.can_cancel || payment?.status === "pending");
+        btn.hidden = !canCancel;
+        btn.disabled = !canCancel;
+      }
+
+      function buildReturnUrl(payment) {
+        const params = new URLSearchParams();
+        params.set("manual_payment_return", "1");
+        params.set("manual_payment_reference", payment.reference || REFERENCE);
+        if (payment.level_id) params.set("open_level_id", payment.level_id);
+        if (payment.level_number) params.set("level_number", payment.level_number);
+        if (payment.payment_type) params.set("payment_type", payment.payment_type);
+        return `/?${params.toString()}`;
+      }
+
+      function redirectToUnlockedLevel(payment) {
+        if (redirectStarted || payment?.status !== "approved") return;
+        redirectStarted = true;
+        updateAutoCheckText();
+        const btn = document.getElementById("statusBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Opening level';
+        window.setTimeout(() => {
+          window.location.href = buildReturnUrl(payment);
+        }, REDIRECT_DELAY_MS);
+      }
+
+      async function loadPayment(options = {}) {
+        if (requestInFlight || redirectStarted) return;
+        requestInFlight = true;
+
+        try {
+          const response = await fetch(`/api/payments/manual/status/${encodeURIComponent(REFERENCE)}`, {
+            credentials: "include",
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || data.success === false) {
+            throw new Error(data.message || data.error || "Could not load payment status.");
+          }
+
+          currentPayment = data.payment || null;
+          expiryRefreshRequested = false;
+          nextPollAt = Date.now() + POLL_INTERVAL_MS;
+
+          renderPaymentDetails(currentPayment);
+          setStatusMessage(currentPayment);
+          updateCancelButton(currentPayment);
+          updateTimer();
+          updateAutoCheckText();
+          redirectToUnlockedLevel(currentPayment);
+        } catch (error) {
+          if (!options.silent) {
+            setStatusMessage(null, error.message);
+            document.getElementById("statusBox").classList.add("failed");
+          }
+        } finally {
+          requestInFlight = false;
+        }
+      }
+
+      async function copyAccountNumber() {
+        try {
+          await navigator.clipboard.writeText(ACCOUNT_NUMBER);
+        } catch (error) {
+          const input = document.createElement("input");
+          input.value = ACCOUNT_NUMBER;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand("copy");
+          input.remove();
+        }
+        const btn = document.getElementById("copyAccountBtn");
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied';
+        window.setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy number';
+        }, 1200);
+      }
+
+      function startAutoChecks() {
+        window.setInterval(() => {
+          updateTimer();
+          updateAutoCheckText();
+
+          if (!currentPayment || currentPayment.status !== "pending" || redirectStarted) return;
+          if (Date.now() >= nextPollAt) {
+            loadPayment({ silent: true });
+          }
+        }, 1000);
+      }
+
+      async function cancelPayment() {
+        if (!currentPayment?.reference || !currentPayment.can_cancel) {
+          setStatusMessage(currentPayment, "This payment can no longer be cancelled.");
+          return;
+        }
+
+        if (!window.confirm("Cancel this pending manual payment?")) return;
+
+        const btn = document.getElementById("cancelPaymentBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Cancelling';
+
+        try {
+          const response = await fetch(`/api/payments/manual/cancel/${encodeURIComponent(REFERENCE)}`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reason: "cancelled_from_manual_payment_page" }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || data.success === false) {
+            throw new Error(data.message || data.error || "Could not cancel payment.");
+          }
+          currentPayment = data.payment || currentPayment;
+          renderPaymentDetails(currentPayment);
+          setStatusMessage(currentPayment);
+          updateCancelButton(currentPayment);
+          updateTimer();
+          updateAutoCheckText();
+        } catch (error) {
+          setStatusMessage(currentPayment, error.message);
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-ban"></i> Cancel payment';
+        }
+      }
+
+      document.getElementById("copyAccountBtn").addEventListener("click", copyAccountNumber);
+      document.getElementById("statusBtn").addEventListener("click", () => {
+        window.location.href = `/manual-payment-status/${encodeURIComponent(REFERENCE)}`;
+      });
+      document.getElementById("cancelPaymentBtn").addEventListener("click", cancelPayment);
+
+      loadPayment().catch(() => {});
+      startAutoChecks();
+    </script>
+  </body>
+</html>

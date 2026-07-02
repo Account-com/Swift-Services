@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+deepenv/
+database.db
+database_backup_before_block7.db
+*.sqlite
+*.sqlite3
+instance/
+.venv/
+venv/
+.env.local

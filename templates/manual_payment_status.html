@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manual Payment Status</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080a0c;
+        --panel: #101418;
+        --panel-strong: #151b20;
+        --line: rgba(255, 255, 255, 0.12);
+        --line-strong: rgba(255, 255, 255, 0.22);
+        --text: #f7faf8;
+        --muted: #a8b3ad;
+        --soft: #d6ded8;
+        --accent: #35d07f;
+        --warn: #f5b84b;
+        --danger: #ff6b6b;
+        --info: #72a7ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          linear-gradient(145deg, rgba(53, 208, 127, 0.12), transparent 34%),
+          linear-gradient(315deg, rgba(245, 184, 75, 0.08), transparent 30%),
+          var(--bg);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 22px;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .statusShell {
+        width: min(100%, 740px);
+        animation: pageIn 420ms ease both;
+      }
+
+      .statusPanel {
+        background: rgba(16, 20, 24, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+        overflow: hidden;
+        backdrop-filter: blur(18px);
+      }
+
+      .statusTopLine {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .timerBadge,
+      .refreshBtn,
+      .cancelBtn,
+      .autoCheck,
+      .trustChip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .timerBadge {
+        min-height: 42px;
+        border: 1px solid rgba(114, 167, 255, 0.35);
+        border-radius: 8px;
+        background: rgba(114, 167, 255, 0.11);
+        color: #dce8ff;
+        padding: 0 13px;
+        font-weight: 900;
+        transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+      }
+
+      .timerBadge.warning {
+        border-color: rgba(245, 184, 75, 0.45);
+        background: rgba(245, 184, 75, 0.14);
+        color: #ffe2a7;
+      }
+
+      .timerBadge.expired {
+        border-color: rgba(255, 107, 107, 0.45);
+        background: rgba(255, 107, 107, 0.14);
+        color: #ffd0d0;
+      }
+
+      .refreshBtn,
+      .cancelBtn {
+        border: 0;
+        border-radius: 8px;
+        min-height: 42px;
+        padding: 0 15px;
+        color: #07100b;
+        background: var(--accent);
+        font-weight: 900;
+        cursor: pointer;
+        transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      }
+
+      .cancelBtn {
+        color: #ffd0d0;
+        background: rgba(255, 107, 107, 0.13);
+        border: 1px solid rgba(255, 107, 107, 0.32);
+      }
+
+      .refreshBtn:hover {
+        background: #59dfa0;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(53, 208, 127, 0.22);
+      }
+
+      .cancelBtn:hover {
+        background: rgba(255, 107, 107, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .refreshBtn:disabled,
+      .cancelBtn:disabled {
+        cursor: wait;
+        opacity: 0.78;
+        transform: none;
+      }
+
+      .cancelBtn[hidden] {
+        display: none;
+      }
+
+      .statusBody {
+        padding: 24px;
+      }
+
+      .statusHero {
+        display: grid;
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 16px;
+        align-items: center;
+      }
+
+      .statusOrb {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #07100b;
+        background: var(--warn);
+        font-size: 24px;
+        box-shadow: 0 0 0 8px rgba(245, 184, 75, 0.12);
+        transition: background 200ms ease, box-shadow 200ms ease;
+      }
+
+      .statusOrb.success {
+        background: var(--accent);
+        box-shadow: 0 0 0 8px rgba(53, 208, 127, 0.12);
+      }
+
+      .statusOrb.failed {
+        background: var(--danger);
+        box-shadow: 0 0 0 8px rgba(255, 107, 107, 0.12);
+      }
+
+      .statusTitle {
+        margin: 0;
+        font-size: clamp(24px, 5vw, 34px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .statusSub {
+        margin: 9px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .messageBox {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        border-radius: 8px;
+        padding: 14px;
+        background: rgba(245, 184, 75, 0.12);
+        border: 1px solid rgba(245, 184, 75, 0.28);
+        color: #ffe2a7;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .messageBox.success {
+        background: rgba(53, 208, 127, 0.12);
+        border-color: rgba(53, 208, 127, 0.34);
+        color: #c9f7dc;
+      }
+
+      .messageBox.failed {
+        background: rgba(255, 107, 107, 0.12);
+        border-color: rgba(255, 107, 107, 0.32);
+        color: #ffd0d0;
+      }
+
+      .messageIcon {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .paymentMeta {
+        margin-top: 16px;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metaItem {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 13px;
+        background: rgba(255, 255, 255, 0.035);
+        transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+      }
+
+      .metaItem:hover {
+        transform: translateY(-1px);
+        border-color: var(--line-strong);
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .metaLabel {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .metaValue {
+        margin-top: 6px;
+        color: var(--soft);
+        font-weight: 900;
+        overflow-wrap: anywhere;
+      }
+
+      .trustStrip {
+        margin-top: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .trustChip {
+        min-height: 34px;
+        padding: 0 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--soft);
+        background: rgba(255, 255, 255, 0.035);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .timeline {
+        margin-top: 22px;
+        display: grid;
+      }
+
+      .timelineStep {
+        position: relative;
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        min-height: 74px;
+      }
+
+      .timelineStep:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        left: 18px;
+        top: 38px;
+        bottom: 0;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .timelineStep.complete:not(:last-child)::after {
+        background: rgba(53, 208, 127, 0.68);
+      }
+
+      .timelineStep.failed:not(:last-child)::after {
+        background: rgba(255, 107, 107, 0.58);
+      }
+
+      .stepIndicator {
+        position: relative;
+        z-index: 1;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: var(--panel-strong);
+        color: var(--muted);
+        font-weight: 900;
+        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+      }
+
+      .timelineStep.complete .stepIndicator {
+        border-color: rgba(53, 208, 127, 0.58);
+        background: var(--accent);
+        color: #07100b;
+      }
+
+      .timelineStep.current .stepIndicator {
+        border-color: rgba(245, 184, 75, 0.58);
+        color: #ffe2a7;
+      }
+
+      .timelineStep.failed .stepIndicator {
+        border-color: rgba(255, 107, 107, 0.58);
+        background: rgba(255, 107, 107, 0.18);
+        color: #ffd0d0;
+      }
+
+      .stepTitle {
+        font-weight: 900;
+      }
+
+      .stepText {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .autoCheck {
+        margin-top: 16px;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .pulseDot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 0 rgba(53, 208, 127, 0.42);
+        animation: pulse 1500ms ease infinite;
+      }
+
+      @keyframes pageIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        70% {
+          box-shadow: 0 0 0 10px rgba(53, 208, 127, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(53, 208, 127, 0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        .pulseDot,
+        .fa-spin {
+          animation: none !important;
+        }
+      }
+
+      @media (max-width: 620px) {
+        body {
+          padding: 12px;
+        }
+
+        .statusTopLine {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .timerBadge,
+        .refreshBtn,
+        .cancelBtn {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .statusBody {
+          padding: 20px;
+        }
+
+        .statusHero,
+        .paymentMeta {
+          grid-template-columns: 1fr;
+        }
+
+        .statusOrb {
+          width: 54px;
+          height: 54px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="statusShell">
+      <section class="statusPanel">
+        <div class="statusTopLine">
+          <div id="timerBadge" class="timerBadge">
+            <i class="fas fa-clock"></i>
+            <span id="timerText">10:00</span>
+          </div>
+          <button id="refreshBtn" class="refreshBtn" type="button">
+            <i class="fas fa-rotate-right"></i>
+            Refresh status
+          </button>
+          <button id="cancelPaymentBtn" class="cancelBtn" type="button" hidden>
+            <i class="fas fa-ban"></i>
+            Cancel payment
+          </button>
+        </div>
+
+        <div class="statusBody">
+          <div class="statusHero">
+            <div id="statusOrb" class="statusOrb"><i class="fas fa-hourglass-half"></i></div>
+            <div>
+              <h1 class="statusTitle">Manual payment status</h1>
+              <p class="statusSub">
+                This tracker checks admin approval automatically every 10 seconds and opens your level as soon as payment is approved.
+              </p>
+            </div>
+          </div>
+
+          <div id="messageBox" class="messageBox">
+            <span id="messageIcon" class="messageIcon"><i class="fas fa-circle-notch fa-spin"></i></span>
+            <span id="messageText">Checking payment status.</span>
+          </div>
+
+          <div class="paymentMeta">
+            <div class="metaItem">
+              <div class="metaLabel">Reference</div>
+              <div id="referenceValue" class="metaValue">{{ reference }}</div>
+            </div>
+            <div class="metaItem">
+              <div class="metaLabel">Amount</div>
+              <div id="amountValue" class="metaValue">Loading...</div>
+            </div>
+            <div class="metaItem">
+              <div class="metaLabel">Level</div>
+              <div id="levelValue" class="metaValue">Loading...</div>
+            </div>
+            <div class="metaItem">
+              <div class="metaLabel">Status</div>
+              <div id="statusValue" class="metaValue">Checking...</div>
+            </div>
+          </div>
+
+          <div class="trustStrip">
+            <span class="trustChip"><i class="fas fa-shield-halved"></i> Admin dashboard linked</span>
+            <span class="trustChip"><i class="fas fa-rotate"></i> 10s background check</span>
+            <span class="trustChip"><i class="fas fa-unlock-keyhole"></i> Auto-opens unlocked level</span>
+          </div>
+
+          <div id="timeline" class="timeline"></div>
+
+          <div id="autoCheckText" class="autoCheck">
+            <span class="pulseDot"></span>
+            <span>Auto-checking approval status.</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const REFERENCE = {{ reference|tojson }};
+      const POLL_INTERVAL_MS = 10000;
+      const REDIRECT_DELAY_MS = 1300;
+
+      let currentPayment = null;
+      let expiryRefreshRequested = false;
+      let requestInFlight = false;
+      let redirectStarted = false;
+      let nextPollAt = Date.now() + POLL_INTERVAL_MS;
+
+      function parseServerDate(value) {
+        if (!value) return null;
+        const text = String(value);
+        const date = new Date(text.endsWith("Z") || text.includes("+") ? text : `${text}Z`);
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      function formatAmount(value) {
+        const amount = Number(value || 0);
+        return `${amount.toFixed(2)} GHS`;
+      }
+
+      function formatTime(seconds) {
+        const safe = Math.max(0, Number(seconds || 0));
+        const minutes = Math.floor(safe / 60);
+        const rest = safe % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+      }
+
+      function secondsRemaining() {
+        if (!currentPayment || currentPayment.status !== "pending") return 0;
+        const expiresAt = parseServerDate(currentPayment.expires_at);
+        if (!expiresAt) return Number(currentPayment.seconds_remaining || 0);
+        return Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+      }
+
+      function isStoppedStatus(status) {
+        return ["failed", "cancelled", "canceled"].includes(String(status || "").toLowerCase());
+      }
+
+      function humanStatus(value) {
+        const raw = String(value || "pending").replaceAll("_", " ");
+        return raw.charAt(0).toUpperCase() + raw.slice(1);
+      }
+
+      function setRefreshLoading(isLoading) {
+        const btn = document.getElementById("refreshBtn");
+        btn.disabled = isLoading;
+        btn.innerHTML = isLoading
+          ? '<i class="fas fa-circle-notch fa-spin"></i> Checking'
+          : '<i class="fas fa-rotate-right"></i> Refresh status';
+      }
+
+      function setMessage(payment, message) {
+        const box = document.getElementById("messageBox");
+        const text = document.getElementById("messageText");
+        const icon = document.getElementById("messageIcon");
+        const orb = document.getElementById("statusOrb");
+
+        box.classList.remove("success", "failed");
+        orb.classList.remove("success", "failed");
+
+        if (!payment) {
+          icon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+          orb.innerHTML = '<i class="fas fa-hourglass-half"></i>';
+          text.textContent = message || "Checking payment status.";
+          return;
+        }
+
+        if (payment.status === "approved") {
+          box.classList.add("success");
+          orb.classList.add("success");
+          icon.innerHTML = '<i class="fas fa-circle-check"></i>';
+          orb.innerHTML = '<i class="fas fa-unlock-keyhole"></i>';
+          text.textContent = "Payment approved. Opening the unlocked level now.";
+          return;
+        }
+
+        if (payment.status === "failed") {
+          box.classList.add("failed");
+          orb.classList.add("failed");
+          icon.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
+          orb.innerHTML = '<i class="fas fa-circle-xmark"></i>';
+          text.textContent = payment.failure_reason === "expired"
+            ? "Manual payment expired before admin approval. Restart the payment process if you still want this level."
+            : "Manual payment failed. Restart the payment process if you still want this level.";
+          return;
+        }
+
+        if (payment.status === "cancelled" || payment.status === "canceled") {
+          box.classList.add("failed");
+          orb.classList.add("failed");
+          icon.innerHTML = '<i class="fas fa-ban"></i>';
+          orb.innerHTML = '<i class="fas fa-ban"></i>';
+          text.textContent = "Manual payment cancelled. Restart the payment process if you still want this level.";
+          return;
+        }
+
+        icon.innerHTML = '<i class="fas fa-hourglass-half"></i>';
+        orb.innerHTML = '<i class="fas fa-hourglass-half"></i>';
+        text.textContent = message || "Payment is pending and waiting for admin confirmation.";
+      }
+
+      function renderTimeline(payment) {
+        const status = payment?.status || "pending";
+        const approved = status === "approved";
+        const failed = status === "failed";
+        const cancelled = status === "cancelled" || status === "canceled";
+        const steps = [
+          {
+            title: "Payment reference created",
+            text: "Your manual payment is tied to this reference.",
+            state: "complete",
+            icon: "fa-receipt",
+          },
+          {
+            title: failed || cancelled ? "Review stopped" : "Admin review",
+            text: failed || cancelled ? "This payment can no longer be approved." : "The admin dashboard is checked every 10 seconds.",
+            state: failed || cancelled ? "failed" : approved ? "complete" : "current",
+            icon: failed || cancelled ? "fa-triangle-exclamation" : "fa-user-shield",
+          },
+          {
+            title: cancelled ? "Payment cancelled" : "Payment approved",
+            text: cancelled ? "You cancelled this pending payment." : approved ? "Admin has confirmed the payment." : "Waiting for approval.",
+            state: approved ? "complete" : failed || cancelled ? "failed" : "current",
+            icon: approved ? "fa-circle-check" : failed || cancelled ? "fa-circle-xmark" : "fa-clock",
+          },
+          {
+            title: "Level workspace opens",
+            text: approved ? "Redirecting you to the unlocked level." : failed || cancelled ? "This payment is no longer active." : "This happens automatically after approval.",
+            state: approved ? "complete" : failed || cancelled ? "failed" : "current",
+            icon: approved ? "fa-arrow-right" : failed || cancelled ? "fa-lock" : "fa-unlock-keyhole",
+          },
+        ];
+
+        document.getElementById("timeline").innerHTML = steps
+          .map((step) => `
+            <div class="timelineStep ${step.state}">
+              <div class="stepIndicator"><i class="fas ${step.icon}"></i></div>
+              <div>
+                <div class="stepTitle">${step.title}</div>
+                <div class="stepText">${step.text}</div>
+              </div>
+            </div>
+          `)
+          .join("");
+      }
+
+      function updateTimer() {
+        const badge = document.getElementById("timerBadge");
+        const text = document.getElementById("timerText");
+        if (currentPayment?.status === "cancelled" || currentPayment?.status === "canceled") {
+          text.textContent = "Cancelled";
+          badge.classList.remove("warning");
+          badge.classList.add("expired");
+          return;
+        }
+        const remaining = secondsRemaining();
+        text.textContent = formatTime(remaining);
+        badge.classList.toggle("warning", remaining > 0 && remaining <= 120);
+        badge.classList.toggle("expired", remaining <= 0 && currentPayment?.status !== "approved");
+
+        if (currentPayment?.status === "pending" && remaining <= 0 && !expiryRefreshRequested) {
+          expiryRefreshRequested = true;
+          loadPayment({ silent: true });
+        }
+      }
+
+      function updateAutoCheckText() {
+        const el = document.getElementById("autoCheckText");
+        if (!el) return;
+
+        if (redirectStarted) {
+          el.innerHTML = '<i class="fas fa-arrow-right"></i><span>Redirecting to your unlocked level.</span>';
+          return;
+        }
+
+        if (currentPayment?.status === "approved") {
+          el.innerHTML = '<i class="fas fa-circle-check"></i><span>Approved. Preparing your level workspace.</span>';
+          return;
+        }
+
+        if (isStoppedStatus(currentPayment?.status)) {
+          el.innerHTML = '<i class="fas fa-circle-xmark"></i><span>Auto-check stopped.</span>';
+          return;
+        }
+
+        const seconds = Math.max(0, Math.ceil((nextPollAt - Date.now()) / 1000));
+        el.innerHTML = `<span class="pulseDot"></span><span>Auto-checking again in ${seconds}s.</span>`;
+      }
+
+      function renderPaymentDetails(payment) {
+        document.getElementById("referenceValue").textContent = payment.reference || REFERENCE;
+        document.getElementById("amountValue").textContent = formatAmount(payment.amount);
+        document.getElementById("levelValue").textContent = payment.level_number
+          ? `Level ${payment.level_number}`
+          : "Not available";
+        document.getElementById("statusValue").textContent = humanStatus(payment.status);
+      }
+
+      function updateCancelButton(payment) {
+        const btn = document.getElementById("cancelPaymentBtn");
+        if (!btn) return;
+        const canCancel = Boolean(payment?.can_cancel || payment?.status === "pending");
+        btn.hidden = !canCancel;
+        btn.disabled = !canCancel;
+      }
+
+      function buildReturnUrl(payment) {
+        const params = new URLSearchParams();
+        params.set("manual_payment_return", "1");
+        params.set("manual_payment_reference", payment.reference || REFERENCE);
+        if (payment.level_id) params.set("open_level_id", payment.level_id);
+        if (payment.level_number) params.set("level_number", payment.level_number);
+        if (payment.payment_type) params.set("payment_type", payment.payment_type);
+        return `/?${params.toString()}`;
+      }
+
+      function redirectToUnlockedLevel(payment) {
+        if (redirectStarted || payment?.status !== "approved") return;
+        redirectStarted = true;
+        setRefreshLoading(true);
+        updateAutoCheckText();
+        window.setTimeout(() => {
+          window.location.href = buildReturnUrl(payment);
+        }, REDIRECT_DELAY_MS);
+      }
+
+      async function loadPayment(options = {}) {
+        if (requestInFlight || redirectStarted) return;
+        requestInFlight = true;
+        if (!options.silent) setRefreshLoading(true);
+
+        try {
+          const response = await fetch(`/api/payments/manual/status/${encodeURIComponent(REFERENCE)}`, {
+            credentials: "include",
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || data.success === false) {
+            throw new Error(data.message || data.error || "Could not load payment status.");
+          }
+
+          currentPayment = data.payment || null;
+          expiryRefreshRequested = false;
+          nextPollAt = Date.now() + POLL_INTERVAL_MS;
+
+          renderPaymentDetails(currentPayment);
+          updateCancelButton(currentPayment);
+          setMessage(currentPayment);
+          renderTimeline(currentPayment);
+          updateTimer();
+          updateAutoCheckText();
+          redirectToUnlockedLevel(currentPayment);
+        } catch (error) {
+          if (!options.silent) {
+            setMessage(null, error.message);
+            document.getElementById("messageBox").classList.add("failed");
+            document.getElementById("statusOrb").classList.add("failed");
+          }
+        } finally {
+          requestInFlight = false;
+          if (!redirectStarted) setRefreshLoading(false);
+        }
+      }
+
+      function startAutoChecks() {
+        window.setInterval(() => {
+          updateTimer();
+          updateAutoCheckText();
+
+          if (!currentPayment || currentPayment.status !== "pending" || redirectStarted) return;
+          if (Date.now() >= nextPollAt) {
+            loadPayment({ silent: true });
+          }
+        }, 1000);
+      }
+
+      document.getElementById("refreshBtn").addEventListener("click", () => {
+        loadPayment({ silent: false });
+      });
+
+      document.getElementById("cancelPaymentBtn").addEventListener("click", async () => {
+        if (!currentPayment?.reference || !currentPayment.can_cancel) {
+          setMessage(currentPayment, "This payment can no longer be cancelled.");
+          return;
+        }
+
+        if (!window.confirm("Cancel this pending manual payment?")) return;
+
+        const btn = document.getElementById("cancelPaymentBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Cancelling';
+
+        try {
+          const response = await fetch(`/api/payments/manual/cancel/${encodeURIComponent(REFERENCE)}`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reason: "cancelled_from_status_page" }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || data.success === false) {
+            throw new Error(data.message || data.error || "Could not cancel payment.");
+          }
+          currentPayment = data.payment || currentPayment;
+          renderPaymentDetails(currentPayment);
+          updateCancelButton(currentPayment);
+          setMessage(currentPayment);
+          renderTimeline(currentPayment);
+          updateTimer();
+          updateAutoCheckText();
+        } catch (error) {
+          setMessage(currentPayment, error.message);
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-ban"></i> Cancel payment';
+        }
+      });
+
+      renderTimeline(null);
+      loadPayment().catch(() => {});
+      startAutoChecks();
+    </script>
+  </body>
+</html>

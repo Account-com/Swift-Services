@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Console</title>
+    <link rel="icon" href="{{url_for('static', filename='images/favicon-180x180-1.png')}}">
+    <link rel="stylesheet" href="/static/css/admin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="adminApp">
+
+      
+<div id="adminLoginView" class="adminLoginShell adminLoginExperience">
+  <div class="adminLoginAmbient" aria-hidden="true">
+    <span class="adminLoginGlow adminLoginGlowOne"></span>
+    <span class="adminLoginGlow adminLoginGlowTwo"></span>
+    <span class="adminLoginGridWash"></span>
+  </div>
+
+  <main class="adminLoginStage" aria-labelledby="adminLoginTitle">
+    <div class="adminLoginMascot" aria-hidden="true">
+      <div class="adminMascotShadow"></div>
+      <div class="adminMascotFigure">
+        <span class="adminMascotAntenna"></span>
+        <span class="adminMascotHead">
+          <span class="adminMascotEar adminMascotEarLeft"></span>
+          <span class="adminMascotEar adminMascotEarRight"></span>
+          <span class="adminMascotVisor"></span>
+          <span class="adminMascotEye adminMascotEyeLeft"></span>
+          <span class="adminMascotEye adminMascotEyeRight"></span>
+          <span class="adminMascotFaceLine"></span>
+        </span>
+        <span class="adminMascotNeck"></span>
+        <span class="adminMascotBody">
+          <span class="adminMascotShoulder adminMascotShoulderLeft"></span>
+          <span class="adminMascotShoulder adminMascotShoulderRight"></span>
+          <span class="adminMascotChestPanel"></span>
+          <span class="adminMascotCoreGlow"></span>
+          <span class="adminMascotBadge"></span>
+        </span>
+        <span class="adminMascotHip">
+          <span></span>
+        </span>
+        <span class="adminMascotArm adminMascotArmBack">
+          <span class="adminMascotUpperArm"></span>
+          <span class="adminMascotForearm"></span>
+          <span class="adminMascotHand"></span>
+        </span>
+        <span class="adminMascotArm adminMascotArmPull">
+          <span class="adminMascotUpperArm"></span>
+          <span class="adminMascotForearm"></span>
+          <span class="adminMascotHand adminMascotGripHand">
+            <span class="adminMascotFinger adminMascotFingerOne"></span>
+            <span class="adminMascotFinger adminMascotFingerTwo"></span>
+          </span>
+        </span>
+        <span class="adminMascotLeg adminMascotLegBack">
+          <span class="adminMascotThigh"></span>
+          <span class="adminMascotKnee"></span>
+          <span class="adminMascotShin"></span>
+          <span class="adminMascotFoot"></span>
+        </span>
+        <span class="adminMascotLeg adminMascotLegFront">
+          <span class="adminMascotThigh"></span>
+          <span class="adminMascotKnee"></span>
+          <span class="adminMascotShin"></span>
+          <span class="adminMascotFoot"></span>
+        </span>
+      </div>
+    </div>
+
+    <section class="adminPanelCard adminLoginCard" aria-labelledby="adminLoginTitle" aria-describedby="adminLoginHint">
+      <span class="adminLoginPullGrip" aria-hidden="true">
+        <span class="adminLoginPullGripSlot"></span>
+        <span class="adminLoginPullGripPad adminLoginPullGripPadTop"></span>
+        <span class="adminLoginPullGripPad adminLoginPullGripPadBottom"></span>
+      </span>
+
+      <div class="adminLoginHeader">
+        <div class="adminBrandMark adminLoginBrandMark" aria-hidden="true">
+          <i class="fas fa-building-shield"></i>
+        </div>
+        <div>
+          <div class="adminLoginKicker">EarnMaster</div>
+          <h1 id="adminLoginTitle" class="adminLoginTitle">Admin Portal</h1>
+        </div>
+      </div>
+
+      <p id="adminLoginHint" class="adminLoginLead">
+        Secure access for operations, approvals, and account control.
+      </p>
+
+      <form id="adminLoginForm" class="adminLoginForm" autocomplete="on" novalidate>
+        <div class="adminAuthGrid">
+          <label class="adminField" for="adminUsername">
+            <span class="adminFieldLabel">Username or email</span>
+            <input id="adminUsername" class="adminInput" type="text" placeholder="admin@earnmaster" autocomplete="username" />
+          </label>
+
+          <label class="adminField adminPasswordField" for="adminPassword">
+            <span class="adminFieldLabel">Password</span>
+            <div class="adminPasswordWrap">
+              <input id="adminPassword" class="adminInput" type="password" placeholder="Enter password" autocomplete="current-password" />
+              <button id="adminPasswordToggle" class="adminPasswordToggle" type="button" aria-label="Show password">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </label>
+        </div>
+
+        <div class="adminLoginOptionsRow">
+          <label class="adminRememberToggle" for="adminRememberMe">
+            <input id="adminRememberMe" type="checkbox" />
+            <span>Remember username</span>
+          </label>
+          <span class="adminLoginSecurityNote">
+            <i class="fas fa-lock"></i>
+            Protected session
+          </span>
+        </div>
+
+        <div class="adminAuthActions">
+          <button id="adminLoginBtn" class="adminPrimaryBtn adminLoginSubmit" type="submit">
+            <span>Access dashboard</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+
+      <div id="adminLoginError" class="adminErrorText" role="alert" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+
+<div id="adminShellView" class="adminShellRoot" hidden>
+        <aside class="adminSidebar" id="adminSidebar" aria-label="Admin navigation">
+          <div class="adminSidebarTop">
+            <div class="adminSidebarBrand">
+              <div class="adminBrandMark adminSidebarMark">
+                <i class="fas fa-shield-halved"></i>
+              </div>
+              <div class="adminSidebarBrandCopy">
+                <div class="adminBrandEyebrow">Operations Console</div>
+                <div class="adminBrandTitle">Admin Dashboard</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="adminSidebarSection">
+            <div class="adminSidebarLabel">Workspace</div>
+            <div class="adminSidebarNav">
+              <button class="adminSidebarLink active" type="button" data-tab="overview">
+                <i class="fas fa-chart-line"></i><span>Overview</span><span class="adminNavBadge adminNavBadgeLive" id="sidebarBadgeOverview">Live</span>
+              </button>
+              <button class="adminSidebarLink" type="button" data-tab="payments">
+                <i class="fas fa-credit-card"></i><span>Payments</span><span class="adminNavBadge" id="sidebarBadgePayments">0</span>
+              </button>
+              <button class="adminSidebarLink" type="button" data-tab="withdrawals">
+                <i class="fas fa-money-bill-wave"></i><span>Withdrawals</span><span class="adminNavBadge" id="sidebarBadgeWithdrawals">0</span>
+              </button>
+              <button class="adminSidebarLink" type="button" data-tab="users">
+                <i class="fas fa-users"></i><span>Users</span><span class="adminNavBadge" id="sidebarBadgeUsers">0</span>
+              </button>
+              <button class="adminSidebarLink" type="button" data-tab="risk">
+                <i class="fas fa-triangle-exclamation"></i><span>Risk / Flags</span><span class="adminNavBadge" id="sidebarBadgeRisk">0</span>
+              </button>
+              <button class="adminSidebarLink" type="button" data-tab="logs">
+                <i class="fas fa-clock-rotate-left"></i><span>Audit Logs</span><span class="adminNavBadge" id="sidebarBadgeLogs">0</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="adminSidebarFooter">
+            <div class="adminSidebarStat">
+              <span class="statusDot live"></span>
+              <div>
+                <div class="adminSidebarStatLabel">Live connection</div>
+                <div id="adminStatusTextSidebar" class="adminSidebarStatValue">Connected</div>
+              </div>
+            </div>
+            <div class="adminSidebarHint">Premium control surface, not a box of unsorted alerts.</div>
+          </div>
+        </aside>
+
+        <button id="adminBackdrop" class="adminBackdrop" type="button" aria-label="Close sidebar" hidden></button>
+
+        <div class="adminTopbar">
+          <div class="adminTopbarLeft">
+            <div class="adminBrandMark">
+              <i class="fas fa-shield-halved"></i>
+            </div>
+            <div>
+              <div class="adminBrandEyebrow">Operations Console</div>
+              <div class="adminBrandTitle">Admin Dashboard</div>
+            </div>
+          </div>
+
+          <div class="adminTopbarSearch" role="search">
+            <i class="fas fa-search"></i>
+            <input id="adminShellSearch" type="search" placeholder="Search current workspace" autocomplete="off" />
+          </div>
+
+          <div class="adminTopbarRight">
+            <div class="adminTopbarStatus">
+              <span class="statusDot live"></span>
+              <span id="adminStatusText">Live connection</span>
+            </div>
+
+            <button id="adminNotificationBtn" class="adminGhostBtn adminIconBtn" type="button" aria-label="Open notifications">
+              <i class="fas fa-bell"></i>
+              <span id="adminNotificationCount" class="adminBadgeCount">0</span>
+            </button>
+
+            <button id="overviewRefreshBtn" class="adminGhostBtn" type="button">
+              <i class="fas fa-rotate-right"></i>
+              <span>Refresh</span>
+            </button>
+
+            <div class="adminTopbarProfileWrap">
+              <button
+                id="adminProfileBtn"
+                class="adminProfileBtn"
+                type="button"
+                
+              >
+                <span class="adminProfileAvatar"><i class="fas fa-user-shield"></i></span>
+                <span class="adminProfileCopy">
+                  <span class="adminProfileLabel">Signed in</span>
+                  <span class="adminProfileName">Admin</span>
+                </span>
+              </button>
+            </div>
+
+            <button id="adminLogoutBtn" class="adminPrimaryBtn" type="button">
+              <i class="fas fa-arrow-right-from-bracket"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="adminNotificationPanel" class="adminNotificationPanel" hidden>
+          <div class="adminNotificationPanelHead">
+            <div>
+              <div class="adminSectionEyebrow">Notifications</div>
+              <div class="adminNotificationTitle">Recent notifications</div>
+            </div>
+            <button id="adminNotificationCloseBtn" class="adminGhostBtn adminIconBtn" type="button" aria-label="Close notifications">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
+          <div id="adminNotificationList" class="adminNotificationList"></div>
+        </div>
+
+        <section class="adminPageHeader">
+          <div class="adminBreadcrumbs" id="adminBreadcrumbs">Operations Console / Overview</div>
+          <div class="adminPageHeaderRow">
+            <div class="adminPageHeaderCopy">
+              <div class="adminSectionEyebrow" id="adminPageEyebrow">Overview</div>
+              <h1 class="adminPageTitle" id="adminPageTitle">Admin Dashboard</h1>
+              <div class="adminPageSubtitle" id="adminPageSubtitle">Monitor approvals, risk, and system posture from one calm surface.</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="adminShell">
+
+          <div class="adminWorkspace">
+            <div class="adminMainPanel">
+              <div class="adminPanelView active" data-panel="overview">
+                <div class="adminPanelCard">
+                  <div class="adminSummaryStrip adminOverviewSummary" id="overviewSummaryStrip">
+                    <div class="adminMetricCard">
+                      <div class="adminMetricLabel">Pending Unlock Payments</div>
+                      <div class="adminMetricValue" id="metricPendingUnlocks">0</div>
+                      <div class="adminMetricSub">Payments waiting for review</div>
+                    </div>
+
+                    <div class="adminMetricCard danger">
+                      <div class="adminMetricLabel">Pending Withdrawals</div>
+                      <div class="adminMetricValue" id="metricPendingWithdrawals">0</div>
+                      <div class="adminMetricSub">Manual payout requests in queue</div>
+                    </div>
+
+                    <div class="adminMetricCard">
+                      <div class="adminMetricLabel">Flagged Users</div>
+                      <div class="adminMetricValue" id="metricFlaggedUsers">0</div>
+                      <div class="adminMetricSub">Accounts under watch or review</div>
+                    </div>
+
+                    <div class="adminMetricCard danger">
+                      <div class="adminMetricLabel">Blocked Users</div>
+                      <div class="adminMetricValue" id="metricBlockedUsers">0</div>
+                      <div class="adminMetricSub">Accounts unable to access platform</div>
+                    </div>
+
+                    <div class="adminMetricCard success">
+                      <div class="adminMetricLabel">Active Today</div>
+                      <div class="adminMetricValue" id="metricActiveToday">0</div>
+                      <div class="adminMetricSub">Users seen recently</div>
+                    </div>
+
+                    <div class="adminMetricCard success">
+                      <div class="adminMetricLabel">Successful Payments</div>
+                      <div class="adminMetricValue" id="metricSuccessfulPayments">0</div>
+                      <div class="adminMetricSub">Verified payments applied successfully</div>
+                    </div>
+                  </div>
+
+                  <div class="adminSectionHead">
+                    <div>
+                      <div class="adminSectionEyebrow">Overview</div>
+                      <h2 class="adminSectionTitle">Admin Operations Overview</h2>
+                      <div class="adminSectionSub">
+                        Watch approvals, risks, and user enforcement from one place.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="adminOverviewHero">
+                    <div>
+                      <div class="adminOverviewHeroEyebrow">System posture</div>
+                      <div class="adminOverviewHeroTitle">Keep approvals tight and abuse expensive.</div>
+                      <div class="adminOverviewHeroText">
+                        This panel shows live queue pressure, risk load, and account controls using your real backend data.
+                      </div>
+                    </div>
+
+                    <div class="adminOverviewHeroStats" id="overviewHeroStats"></div>
+                  </div>
+
+                  <div class="adminOverviewGrid adminGridTwo">
+                    <div class="adminInnerCard">
+                      <div class="adminBlockHead">
+                        <div>
+                          <div class="adminInnerTitle">Urgent queue items</div>
+                          <div class="adminInnerSub">Fast access to live admin pressure points.</div>
+                        </div>
+                      </div>
+                      <div class="adminUrgentStack" id="overviewUrgentCards"></div>
+                    </div>
+
+                    <div class="adminInnerCard">
+                      <div class="adminBlockHead">
+                        <div>
+                          <div class="adminInnerTitle">Policy state</div>
+                          <div class="adminInnerSub">Current operating rules reflected by backend controls.</div>
+                        </div>
+                      </div>
+                      <div class="adminPolicyList" id="overviewPolicyList"></div>
+                    </div>
+                  </div>
+
+                  <div class="adminOverviewLower">
+                    <div class="adminInnerCard">
+                      <div class="adminBlockHead">
+                        <div>
+                          <div class="adminInnerTitle">Recent system activity</div>
+                          <div class="adminInnerSub">Latest audit and queue events.</div>
+                        </div>
+                      </div>
+                      <div class="adminActivityFeed" id="overviewActivityFeed"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="adminPanelView" data-panel="payments">
+                <div class="adminPanelCard">
+                  <div class="adminSectionHead">
+                    <div>
+                      <div class="adminSectionEyebrow">Payments</div>
+                      <h2 class="adminSectionTitle">Payment Review</h2>
+                      <div class="adminSectionSub">Review Paystack and manual unlock payments, then resolve pending or mismatched transactions.</div>
+                    </div>
+
+                    <div class="adminSectionActions">
+                      <button class="adminPrimaryBtn" type="button" id="paymentsRefreshBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span>Refresh</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="adminPaymentsSummary" id="paymentsSummaryStrip"></div>
+
+                  <div class="adminQueueToolbar">
+                    <div class="adminSearchWrap">
+                      <i class="fas fa-search"></i>
+                      <input id="paymentsSearchInput" class="adminSearchInput" type="text" placeholder="Search by user, phone, reference, or amount" />
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Status</div>
+                      <div class="adminFilterChips" id="paymentsStatusFilters"></div>
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Type</div>
+                      <div class="adminFilterChips" id="paymentsTypeFilters"></div>
+                    </div>
+                  </div>
+
+                  <div class="adminTableShell">
+                    <div class="adminTableHead adminPaymentsTableHead">
+                      <div>User</div>
+                      <div>Type</div>
+                      <div>Level</div>
+                      <div>Expected</div>
+                      <div>Paid</div>
+                      <div>Reference</div>
+                      <div>Status</div>
+                      <div>Actions</div>
+                    </div>
+                    <div id="paymentsRows" class="adminTableBody"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="adminPanelView" data-panel="withdrawals">
+                <div class="adminPanelCard">
+                  <div class="adminSectionHead">
+                    <div>
+                      <div class="adminSectionEyebrow">Withdrawals</div>
+                      <h2 class="adminSectionTitle">Payout Queue</h2>
+                      <div class="adminSectionSub">Approve, reject, or hold withdrawal requests with live balance context.</div>
+                    </div>
+
+                    <div class="adminSectionActions">
+                      <button class="adminPrimaryBtn" type="button" id="withdrawalsRefreshBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span>Refresh</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="adminWithdrawalsSummary" id="withdrawalsSummaryStrip"></div>
+
+                  <div class="adminQueueToolbar">
+                    <div class="adminSearchWrap">
+                      <i class="fas fa-search"></i>
+                      <input id="withdrawalsSearchInput" class="adminSearchInput" type="text" placeholder="Search by user, reference, number, or network" />
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Status</div>
+                      <div class="adminFilterChips" id="withdrawalsStatusFilters"></div>
+                    </div>
+                  </div>
+
+                  <div class="adminTableShell">
+                    <div class="adminTableHead">
+                      <div>User</div>
+                      <div>Amount</div>
+                      <div>Balance @ Request</div>
+                      <div>Active Level</div>
+                      <div>Method</div>
+                      <div>Requested</div>
+                      <div>Status</div>
+                      <div>Actions</div>
+                    </div>
+                    <div id="withdrawalsRows" class="adminTableBody"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="adminPanelView" data-panel="users">
+                <div class="adminPanelCard">
+                  <div class="adminSectionHead">
+                    <div>
+                      <div class="adminSectionEyebrow">Users</div>
+                      <h2 class="adminSectionTitle">Account Controls</h2>
+                      <div class="adminSectionSub">Inspect accounts, control access, and force logout abusive users.</div>
+                    </div>
+
+                    <div class="adminSectionActions">
+                      <button class="adminPrimaryBtn" type="button" id="usersRefreshBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span>Refresh</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="adminUsersSummary" id="usersSummaryStrip"></div>
+
+                  <div class="adminQueueToolbar">
+                    <div class="adminSearchWrap">
+                      <i class="fas fa-search"></i>
+                      <input id="usersSearchInput" class="adminSearchInput" type="text" placeholder="Search by user, phone, email, or status" />
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Status</div>
+                      <div class="adminFilterChips" id="usersStatusFilters"></div>
+                    </div>
+                  </div>
+
+                  <div class="adminTableShell">
+                    <div class="adminTableHead">
+                      <div>User</div>
+                      <div>Status</div>
+                      <div>Balance</div>
+                      <div>Active Level</div>
+                      <div>Access</div>
+                      <div>Last Seen</div>
+                      <div>Actions</div>
+                      <div></div>
+                    </div>
+                    <div id="usersRows" class="adminTableBody"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="adminPanelView" data-panel="risk">
+                <div class="adminPanelCard">
+                  <div class="adminSectionHead">
+                    <div>
+                      <div class="adminSectionEyebrow">Risk / Flags</div>
+                      <h2 class="adminSectionTitle">Risk Review</h2>
+                      <div class="adminSectionSub">Investigate open risk flags and resolve them when reviewed.</div>
+                    </div>
+
+                    <div class="adminSectionActions">
+                      <button class="adminPrimaryBtn" type="button" id="riskRefreshBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span>Refresh</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="adminRiskSummary" id="riskSummaryStrip"></div>
+
+                  <div class="adminQueueToolbar">
+                    <div class="adminSearchWrap">
+                      <i class="fas fa-search"></i>
+                      <input id="riskSearchInput" class="adminSearchInput" type="text" placeholder="Search by title, target, category, or status" />
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Severity</div>
+                      <div class="adminFilterChips" id="riskSeverityFilters"></div>
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Category</div>
+                      <div class="adminFilterChips" id="riskCategoryFilters"></div>
+                    </div>
+                  </div>
+
+                  <div class="adminTableShell">
+                    <div class="adminTableHead">
+                      <div>Issue</div>
+                      <div>Category</div>
+                      <div>Subject</div>
+                      <div>State</div>
+                      <div>Severity</div>
+                      <div>Actions</div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <div id="riskRows" class="adminTableBody"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="adminPanelView" data-panel="logs">
+                <div class="adminPanelCard">
+                  <div class="adminSectionHead">
+                    <div>
+                      <div class="adminSectionEyebrow">Audit Logs</div>
+                      <h2 class="adminSectionTitle">Action Trail</h2>
+                      <div class="adminSectionSub">Track what the admin did, when they did it, and what they touched.</div>
+                    </div>
+
+                    <div class="adminSectionActions">
+                      <button class="adminPrimaryBtn" type="button" id="logsRefreshBtn">
+                        <i class="fas fa-rotate-right"></i>
+                        <span>Refresh</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="adminLogsSummary" id="logsSummaryStrip"></div>
+
+                  <div class="adminQueueToolbar">
+                    <div class="adminSearchWrap">
+                      <i class="fas fa-search"></i>
+                      <input id="logsSearchInput" class="adminSearchInput" type="text" placeholder="Search by actor, action, target, or summary" />
+                    </div>
+
+                    <div class="adminToolbarBlock">
+                      <div class="adminToolbarLabel">Action Group</div>
+                      <div class="adminFilterChips" id="logsTypeFilters"></div>
+                    </div>
+                  </div>
+
+                  <div id="logsRows" class="adminLogsFeed"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="adminDetailPanel" id="adminDetailPanel" aria-hidden="true">
+              <div class="adminDetailCard">
+                <div class="adminDetailHeader">
+                  <div>
+                    <div class="adminDetailEyebrow">Inspector</div>
+                    <h2 class="adminDetailTitle" id="adminDetailTitle">Admin Inspector</h2>
+                  </div>
+                  <button id="adminDetailCloseBtn" class="adminGhostBtn adminIconBtn" type="button" aria-label="Close inspector">
+                    <i class="fas fa-xmark"></i>
+                  </button>
+                </div>
+                <div class="adminDetailText" id="adminDetailBody">
+                  Select a queue item, user, log, or risk flag to inspect details here.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/js/admin-shell.js" defer></script>
+  </body>
+</html>

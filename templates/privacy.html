@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy</title>
+    <style>
+      body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
+      .wrap { max-width: 860px; margin: 0 auto; padding: 32px 18px 56px; }
+      h1 { font-size: 30px; margin-bottom: 8px; }
+      h2 { margin-top: 28px; font-size: 20px; }
+      p, li { line-height: 1.6; color:#cbd5e1; }
+      a { color:#93c5fd; transition: color 180ms ease; }
+      a:hover { color:#bfdbfe; }
+      .meta { color:#94a3b8; font-size: 14px; margin-bottom: 22px; }
+      .card { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:24px; animation: legalCardIn 320ms cubic-bezier(0.16, 1, 0.3, 1) both; transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, box-shadow 180ms ease; }
+      .card:hover { transform: translateY(-2px); border-color: rgba(147,197,253,0.22); box-shadow: 0 18px 42px rgba(0,0,0,0.18); }
+      @keyframes legalCardIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+<h1>Privacy Policy</h1>
+<div class="meta">Last updated: March 12, 2026</div>
+<p>We collect information needed to operate the platform, including account details, payment references, task progress, balances, withdrawal requests, security logs, and support interactions.</p>
+<h2>How data is used</h2>
+<ul>
+  <li>To create and secure user accounts</li>
+  <li>To verify payments and process withdrawals</li>
+  <li>To detect abuse, fraud, and suspicious activity</li>
+  <li>To improve platform reliability during soft launch</li>
+</ul>
+<h2>Data sharing</h2>
+<p>We do not sell user data. Data may be shared only with payment providers, hosting providers, technical vendors, or legal authorities where necessary to operate the service or comply with law.</p>
+<h2>Data retention</h2>
+<p>We retain account and transaction records for operational, security, and dispute-handling purposes.</p>
+<h2>Contact</h2>
+<p>Privacy requests can be sent to <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+</div>
+    </div>
+  </body>
+</html>
