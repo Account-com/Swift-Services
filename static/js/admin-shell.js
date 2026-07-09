@@ -736,6 +736,10 @@ function persistRememberedUsername(username) {
     return { label: "Offline", tone: "danger" };
   }
 
+  function userContactEmail(user) {
+    return user?.contact_email || user?.email || "";
+  }
+
   function animateValue(el, target) {
     if (!el) return;
     const start = Number(el.dataset.current || el.textContent || 0) || 0;
@@ -1452,7 +1456,7 @@ function persistRememberedUsername(username) {
               </div>
               <div class="adminCell" data-label="Balance">
                 <div class="adminCellPrimary">${escapeHtml(user.balance)} GHS</div>
-                <div class="adminCellSub">${escapeHtml(user.email || "No email")}</div>
+                <div class="adminCellSub">${escapeHtml(userContactEmail(user) || "No email")}</div>
               </div>
               <div class="adminCell" data-label="Active Level">
                 <div class="adminCellPrimary">${escapeHtml(user.current_active_level_number ? `Level ${user.current_active_level_number}` : (user.current_active_level_id || "—"))}</div>
@@ -1543,7 +1547,7 @@ function persistRememberedUsername(username) {
               <div>
                 <div class="adminInspectorEyebrow">Account Overview</div>
                 <div class="adminInspectorHeroTitle">${escapeHtml(user.user_id)}</div>
-                <div class="adminInspectorHeroSub">${escapeHtml(user.phone)} • ${escapeHtml(user.email || "No email")} • Created ${escapeHtml(fmtDate(user.created_at))}</div>
+                <div class="adminInspectorHeroSub">${escapeHtml(user.phone)} • ${escapeHtml(userContactEmail(user) || "No email")} • Created ${escapeHtml(fmtDate(user.created_at))}</div>
               </div>
               <span class="adminPill ${toneForStatus(user.account_status)}">${escapeHtml(humanizeStatus(user.account_status))}</span>
             </div>
@@ -1552,6 +1556,10 @@ function persistRememberedUsername(username) {
               <div class="adminInspectorStat">
                 <div class="adminInspectorStatLabel">Balance</div>
                 <div class="adminInspectorStatValue">${escapeHtml(user.balance)} GHS</div>
+              </div>
+              <div class="adminInspectorStat">
+                <div class="adminInspectorStatLabel">Contact Email</div>
+                <div class="adminInspectorStatValue">${escapeHtml(userContactEmail(user) || "Not saved")}</div>
               </div>
               <div class="adminInspectorStat">
                 <div class="adminInspectorStatLabel">Last Seen</div>

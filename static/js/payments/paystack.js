@@ -57,6 +57,10 @@
     return "";
   }
 
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+  }
+
   function persistCurrentUserPatch(patch) {
     if (!LS.state.currentUser) return;
 
@@ -595,9 +599,17 @@
   }
 
   function renderPaymentContext(container, context) {
-    const savedEmail = LS.state.currentUser?.email || "";
+    const savedEmail = String(LS.state.currentUser?.contact_email || LS.state.currentUser?.email || "").trim();
     const savedPhone = LS.state.currentUser?.phone || "";
     const savedNetwork = normalizeNetwork(context.network || "");
+    const contactEmailField = savedEmail
+      ? ""
+      : `
+        <div class="depField">
+          <label class="depLabel">Contact Email</label>
+          <input id="levelPaymentContactEmail" class="depInput" type="email" autocomplete="email" placeholder="you@example.com" />
+        </div>
+      `;
 
     container.innerHTML = `
       <div class="depCardTitle">${LS.escapeHtml(context.label || "Level Payment")}</div>
@@ -617,10 +629,7 @@
         <div class="depSummaryValue">${LS.money(context.reward || 0)}</div>
       </div>
 
-      <div class="depField">
-        <label class="depLabel">Email for Checkout</label>
-        <input id="levelPaymentEmail" class="depInput" type="email" placeholder="you@example.com" value="${LS.escapeHtml(savedEmail)}" />
-      </div>
+      ${contactEmailField}
 
       <div class="depField">
         <label class="depLabel">Mobile Money Network</label>
@@ -1013,16 +1022,21 @@
     }
 
     try {
-      const emailInput = document.getElementById("levelPaymentEmail");
+      const savedContactEmail = String(LS.state.currentUser?.contact_email || LS.state.currentUser?.email || "").trim().toLowerCase();
+      const emailInput = document.getElementById("levelPaymentContactEmail");
       const phoneInput = document.getElementById("levelPaymentPhone");
       const networkInput = document.getElementById("levelPaymentNetwork");
 
-      const email = (emailInput?.value || "").trim().toLowerCase();
+      const contactEmail = savedContactEmail || (emailInput?.value || "").trim().toLowerCase();
       const phone = sanitizePhoneValue(phoneInput?.value || "");
       const network = normalizeNetwork(networkInput?.value || "");
 
-      if (!email) {
-        throw new Error("Email is required for checkout.");
+      if (!savedContactEmail && !contactEmail) {
+        throw new Error("Contact email is required before your first payment.");
+      }
+
+      if (!savedContactEmail && !isValidEmail(contactEmail)) {
+        throw new Error("Enter a valid contact email.");
       }
 
       if (!phone || phone.length !== 10 || !phone.startsWith("0")) {
@@ -1040,11 +1054,13 @@
         throw new Error("Unsupported mobile money network.");
       }
 
-      LS.setUserEmail(email);
-      persistCurrentUserPatch({
-        email,
-        phone,
-      });
+      const userPatch = { phone };
+      if (!savedContactEmail) {
+        LS.setUserEmail(contactEmail);
+        userPatch.email = contactEmail;
+        userPatch.contact_email = contactEmail;
+      }
+      persistCurrentUserPatch(userPatch);
 
       const context = LS.state.paymentContext;
       const initPath =
@@ -1057,7 +1073,7 @@
       const response = await LS.apiPost(initPath, {
         user_id: LS.state.currentUser.id,
         level_id: context.level_id,
-        email,
+        contact_email: contactEmail,
         phone_number: phone,
         network,
         mobile_money_provider: providerCode,

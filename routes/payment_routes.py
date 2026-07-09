@@ -49,7 +49,7 @@ def payments_level_unlock_init():
         return error
 
     level_id = data.get("level_id")
-    email = data.get("email")
+    contact_email = data.get("contact_email") or data.get("email")
     callback_url = data.get("callback_url")
 
     if not level_id:
@@ -66,7 +66,7 @@ def payments_level_unlock_init():
                 conn=conn,
                 user_id=user["user_id"],
                 level_id=level_id,
-                email=email,
+                email=contact_email,
                 callback_url=callback_url,
             )
         return jsonify({"success": True, "payment": result})
@@ -83,7 +83,7 @@ def payments_final_stage_init():
         return error
 
     level_id = data.get("level_id")
-    email = data.get("email")
+    contact_email = data.get("contact_email") or data.get("email")
     callback_url = data.get("callback_url")
 
     if not level_id:
@@ -100,7 +100,7 @@ def payments_final_stage_init():
                 conn=conn,
                 user_id=user["user_id"],
                 level_id=level_id,
-                email=email,
+                email=contact_email,
                 callback_url=callback_url,
             )
         return jsonify({"success": True, "payment": result})

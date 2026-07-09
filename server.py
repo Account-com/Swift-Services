@@ -46,6 +46,15 @@ from services.manual_payment_service import (
 from services.payment_history_service import get_user_payment_history
 from services.telegram_callback_service import process_manual_payment_approval_callback
 from services.telegram_service import notify_manual_payment_approved, start_telegram_callback_polling
+from services.user_email_service import (
+    assign_payment_email_for_new_user,
+    backfill_user_email_fields,
+    ensure_user_payment_email,
+    get_user_contact_email,
+    is_valid_contact_email,
+    normalize_email,
+    save_user_contact_email,
+)
 
 
 load_dotenv()
@@ -260,6 +269,8 @@ def init_db():
         phone TEXT UNIQUE,
         password TEXT,
         email TEXT,
+        contact_email TEXT,
+        payment_email TEXT,
         created_at TEXT,
         last_seen TEXT,
         balance REAL DEFAULT 0,
@@ -272,6 +283,9 @@ def init_db():
 
     if not column_exists(conn, "users", "email"):
         c.execute("ALTER TABLE users ADD COLUMN email TEXT")
+
+    ensure_column(conn, "users", "contact_email", "TEXT")
+    ensure_column(conn, "users", "payment_email", "TEXT")
 
     # ADMIN / SECURITY USER FIELDS
     ensure_column(conn, "users", "firstname", "TEXT")
@@ -289,6 +303,7 @@ def init_db():
     ensure_column(conn, "users", "welcome_popup_hidden", "INTEGER NOT NULL DEFAULT 0")
     ensure_column(conn, "users", "avatar_key", "TEXT")
 
+    backfill_user_email_fields(conn)
     assign_missing_user_avatars(conn)
 
     # REQUESTS (manual withdrawals remain here)
@@ -576,6 +591,7 @@ def get_user_admin_state(conn, user_id):
             user_id,
             phone,
             email,
+            contact_email,
             balance,
             avatar_key,
             created_at,
@@ -598,6 +614,7 @@ def get_user_admin_state(conn, user_id):
         return None
 
     data = dict(row)
+    data["email"] = data.get("contact_email") or data.get("email")
     data["can_login"] = bool(data["can_login"])
     data["can_tasks"] = bool(data["can_tasks"])
     data["can_deposit"] = bool(data["can_deposit"])
@@ -766,6 +783,7 @@ def get_premium_access_summary(conn, user_id):
 def build_public_user_payload(conn, user_row, *, include_phone=False):
     pending = get_pending_withdrawal_summary(conn, user_row["user_id"])
     premium_access = get_premium_access_summary(conn, user_row["user_id"])
+    contact_email = (user_row["contact_email"] or user_row["email"]) if "contact_email" in user_row.keys() else user_row["email"]
     payload = {
         "user_id": user_row["user_id"],
         "firstname": user_row["firstname"],
@@ -773,7 +791,8 @@ def build_public_user_payload(conn, user_row, *, include_phone=False):
         "balance": float(user_row["balance"] or 0),
         "avatar_key": normalize_avatar_key(user_row["avatar_key"] if "avatar_key" in user_row.keys() else None),
         "avatar_url": avatar_url_for_key(user_row["avatar_key"] if "avatar_key" in user_row.keys() else None),
-        "email": user_row["email"],
+        "email": contact_email,
+        "contact_email": contact_email,
         "created_at": user_row["created_at"],
         "last_seen": user_row["last_seen"],
         "account_status": user_row["account_status"],
@@ -1152,6 +1171,8 @@ def parse_json_text(value, fallback=None):
 
 def serialize_user_admin(row):
     data = dict(row)
+    data.pop("payment_email", None)
+    data["email"] = data.get("contact_email") or data.get("email")
     data["can_login"] = bool(data.get("can_login"))
     data["can_tasks"] = bool(data.get("can_tasks"))
     data["can_deposit"] = bool(data.get("can_deposit"))
@@ -1596,6 +1617,8 @@ def normalize_admin_user_row(row):
         return None
 
     data = dict(row)
+    data.pop("payment_email", None)
+    data["email"] = data.get("contact_email") or data.get("email")
 
     data["account_status"] = data.get("account_status") or "active"
     data["can_login"] = bool(data.get("can_login", 1))
@@ -1805,7 +1828,13 @@ def webhook_url():
 
 
 def save_user_email(conn, user_id, email):
-    conn.execute("UPDATE users SET email=?, last_seen=? WHERE user_id=?", (email, now(), user_id))
+    clean_email = normalize_email(email)
+    if not clean_email:
+        return
+    conn.execute(
+        "UPDATE users SET email=?, contact_email=?, last_seen=? WHERE user_id=?",
+        (clean_email, clean_email, now(), user_id),
+    )
 
 
 def create_payment_row(conn, reference, user_id, email, amount_ghs, amount_subunit, access_code):
@@ -1989,10 +2018,12 @@ def register():
 
     avatar_key = pick_random_avatar_key()
 
+    payment_email = assign_payment_email_for_new_user(conn)
+
     conn.execute("""
-    INSERT INTO users (user_id, firstname, surname, phone, password, email, created_at, last_seen, balance, avatar_key)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (user_id, firstname, surname or None, phone, hashed, None, now(), now(), 0, avatar_key))
+    INSERT INTO users (user_id, firstname, surname, phone, password, email, contact_email, payment_email, created_at, last_seen, balance, avatar_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (user_id, firstname, surname or None, phone, hashed, None, None, payment_email, now(), now(), 0, avatar_key))
 
     conn.commit()
     user = conn.execute("SELECT * FROM users WHERE user_id=?", (user_id,)).fetchone()
@@ -2226,11 +2257,8 @@ def initialize_paystack_deposit():
             return error
 
         user_id = user["user_id"]
-        email = (data.get("email") or "").strip().lower()
+        submitted_contact_email = normalize_email(data.get("contact_email") or data.get("email"))
         amount_ghs = clamp_amount(data.get("amount"))
-
-        if not email:
-            return jsonify({"error": "Email is required"}), 400
 
         if not amount_ghs:
             return jsonify({"error": "Amount is required"}), 400
@@ -2249,14 +2277,19 @@ def initialize_paystack_deposit():
             conn.close()
             return jsonify({"error": "User not found"}), 404
 
-        save_user_email(conn, user_id, email)
-        conn.commit()
+        contact_email = get_user_contact_email(conn, user_id)
+        if not contact_email:
+            if not is_valid_contact_email(submitted_contact_email):
+                conn.close()
+                return jsonify({"error": "A valid contact email is required before your first payment."}), 400
+            contact_email = save_user_contact_email(conn, user_id, submitted_contact_email)
+        payment_email = ensure_user_payment_email(conn, user_id)
         conn.close()
 
         reference = make_deposit_reference(user_id)
 
         payload = {
-            "email": email,
+            "email": payment_email,
             "amount": amount_subunit,
             "currency": PAYSTACK_CURRENCY,
             "reference": reference,
@@ -2276,7 +2309,7 @@ def initialize_paystack_deposit():
         auth_url = pdata.get("authorization_url")
 
         conn = get_db()
-        create_payment_row(conn, reference, user_id, email, amount_ghs, amount_subunit, access_code)
+        create_payment_row(conn, reference, user_id, contact_email, amount_ghs, amount_subunit, access_code)
         conn.commit()
         conn.close()
 
@@ -2287,7 +2320,7 @@ def initialize_paystack_deposit():
             "authorization_url": auth_url,
             "public_key": PAYSTACK_PUBLIC_KEY,
             "amount": amount_ghs,
-            "email": email,
+            "email": contact_email,
         })
 
     except Exception as e:
@@ -2535,7 +2568,14 @@ def admin_users():
 
     conn = get_db()
     rows = conn.execute("""
-        SELECT user_id, phone, email, created_at, last_seen, balance
+        SELECT
+            user_id,
+            phone,
+            COALESCE(NULLIF(TRIM(contact_email), ''), email) AS email,
+            COALESCE(NULLIF(TRIM(contact_email), ''), email) AS contact_email,
+            created_at,
+            last_seen,
+            balance
         FROM users
         ORDER BY created_at DESC
     """).fetchall()
@@ -2673,7 +2713,8 @@ def admin_users_full():
         SELECT
             user_id,
             phone,
-            email,
+            COALESCE(NULLIF(TRIM(contact_email), ''), email) AS email,
+            COALESCE(NULLIF(TRIM(contact_email), ''), email) AS contact_email,
             created_at,
             last_seen,
             balance,

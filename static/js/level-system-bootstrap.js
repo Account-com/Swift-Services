@@ -36,8 +36,10 @@
 
   function syncStateCurrentUser(user) {
     state.currentUser = user || null;
-    if (state.currentUser && !state.currentUser.email) {
-      state.currentUser.email = "";
+    if (state.currentUser) {
+      const contactEmail = state.currentUser.contact_email || state.currentUser.email || "";
+      state.currentUser.email = contactEmail;
+      state.currentUser.contact_email = contactEmail;
     }
     saveCurrentUser();
     refreshLegacyBalanceUI();
@@ -50,8 +52,10 @@
     state.pendingPayment =
       parseJSON(localStorage.getItem("pendingLevelPayment"), null) || null;
 
-    if (state.currentUser && !state.currentUser.email) {
-      state.currentUser.email = "";
+    if (state.currentUser) {
+      const contactEmail = state.currentUser.contact_email || state.currentUser.email || "";
+      state.currentUser.email = contactEmail;
+      state.currentUser.contact_email = contactEmail;
     }
   }
 
@@ -187,7 +191,9 @@
 
   function setUserEmail(email) {
     if (!state.currentUser) return;
-    state.currentUser.email = (email || "").trim().toLowerCase();
+    const contactEmail = (email || "").trim().toLowerCase();
+    state.currentUser.email = contactEmail;
+    state.currentUser.contact_email = contactEmail;
     saveCurrentUser();
   }
 

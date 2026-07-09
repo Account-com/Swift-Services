@@ -7,6 +7,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from config import AVATAR_FILENAMES, DATABASE_PATH  # noqa: E402
+from services.user_email_service import backfill_user_email_fields, ensure_user_email_columns  # noqa: E402
 
 SCHEMA_PATH = ROOT_DIR / "database" / "schema.sql"
 
@@ -42,6 +43,8 @@ def apply_schema() -> None:
         # Existing projects might already have users without these columns.
         ensure_column(conn, "users", "balance", "REAL DEFAULT 0")
         ensure_column(conn, "users", "email", "TEXT")
+        ensure_user_email_columns(conn)
+        backfill_user_email_fields(conn)
         ensure_column(conn, "users", "current_active_level_id", "INTEGER")
         ensure_column(conn, "users", "welcome_popup_hidden", "INTEGER NOT NULL DEFAULT 0")
         ensure_column(conn, "users", "avatar_key", "TEXT")

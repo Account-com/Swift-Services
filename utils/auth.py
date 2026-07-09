@@ -30,6 +30,7 @@ def _normalize_user_row(row) -> dict | None:
     data["welcome_popup_hidden"] = bool(data.get("welcome_popup_hidden", 0))
     data["avatar_key"] = str(data.get("avatar_key") or "").strip()
     data["session_version"] = int(data.get("session_version") or 1)
+    data["email"] = data.get("contact_email") or data.get("email") or ""
     return data
 
 
@@ -86,6 +87,7 @@ def get_current_user(required_permission: str | None = None):
                 user_id,
                 phone,
                 email,
+                contact_email,
                 balance,
                 avatar_key,
                 created_at,

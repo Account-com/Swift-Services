@@ -23,6 +23,13 @@ from services.level_service import (
     mark_final_stage_unlocked,
     mark_level_unlocked,
 )
+from services.user_email_service import (
+    ensure_user_payment_email,
+    get_user_contact_email,
+    is_valid_contact_email,
+    normalize_email,
+    save_user_contact_email,
+)
 from utils.enums import PaymentStatus, PaymentType, UserLevelStatus
 
 PAYSTACK_BASE_URL = "https://api.paystack.co"
@@ -115,42 +122,20 @@ def get_payment_config() -> dict[str, Any]:
     }
 
 
-def save_user_email(
+def resolve_payment_emails(
     conn: sqlite3.Connection,
     user_id: str,
-    email: str,
-) -> None:
-    clean_email = (email or "").strip().lower()
-    if not clean_email:
-        return
+    submitted_contact_email: str | None,
+) -> tuple[str, str]:
+    contact_email = get_user_contact_email(conn, user_id)
+    if not contact_email:
+        clean_contact_email = normalize_email(submitted_contact_email)
+        if not is_valid_contact_email(clean_contact_email):
+            raise ValueError("A valid contact email is required before your first payment.")
+        contact_email = save_user_contact_email(conn, user_id, clean_contact_email)
 
-    conn.execute(
-        """
-        UPDATE users
-        SET email = ?
-        WHERE user_id = ?
-        """,
-        (clean_email, user_id),
-    )
-    conn.commit()
-
-
-def get_user_email(
-    conn: sqlite3.Connection,
-    user_id: str,
-) -> str | None:
-    row = fetch_one(
-        conn,
-        """
-        SELECT email
-        FROM users
-        WHERE user_id = ?
-        """,
-        (user_id,),
-    )
-    if not row:
-        return None
-    return (row.get("email") or "").strip().lower() or None
+    payment_email = ensure_user_payment_email(conn, user_id)
+    return contact_email, payment_email
 
 
 def _make_reference(
@@ -287,11 +272,7 @@ def initialize_level_unlock_payment(
     if user_level and user_level["status"] != UserLevelStatus.LOCKED.value:
         raise ValueError("This level is already unlocked or completed.")
 
-    effective_email = (email or get_user_email(conn, user_id) or "").strip().lower()
-    if not effective_email:
-        raise ValueError("Email is required to initialize payment.")
-
-    save_user_email(conn, user_id, effective_email)
+    _contact_email, payment_email = resolve_payment_emails(conn, user_id, email)
 
     reference = _make_reference(
         user_id=user_id,
@@ -307,7 +288,7 @@ def initialize_level_unlock_payment(
     }
 
     response = initialize_paystack_transaction(
-        email=effective_email,
+        email=payment_email,
         amount=float(level["unlock_fee"]),
         reference=reference,
         callback_url=callback_url,
@@ -366,11 +347,7 @@ def initialize_final_stage_payment(
     if user_level["status"] != UserLevelStatus.ACTIVE_FINAL_STAGE_PENDING.value:
         raise ValueError("Final stage is not available for payment yet.")
 
-    effective_email = (email or get_user_email(conn, user_id) or "").strip().lower()
-    if not effective_email:
-        raise ValueError("Email is required to initialize payment.")
-
-    save_user_email(conn, user_id, effective_email)
+    _contact_email, payment_email = resolve_payment_emails(conn, user_id, email)
 
     reference = _make_reference(
         user_id=user_id,
@@ -386,7 +363,7 @@ def initialize_final_stage_payment(
     }
 
     response = initialize_paystack_transaction(
-        email=effective_email,
+        email=payment_email,
         amount=float(level["final_stage_fee"]),
         reference=reference,
         callback_url=callback_url,

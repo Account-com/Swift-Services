@@ -346,12 +346,15 @@ function safeJsonParse(value, fallback = null) {
 function normalizeCurrentUser(raw, fallbackPhone = "") {
   if (!raw) return null;
 
+  const contactEmail = raw.contact_email || raw.contactEmail || raw.email || "";
+
   return {
     id: raw.user_id || raw.id || "",
     firstname: raw.firstname || raw.first_name || raw.firstName || "",
     surname: raw.surname || raw.last_name || raw.lastName || "",
     phone: raw.phone || fallbackPhone || "",
-    email: raw.email || "",
+    email: contactEmail,
+    contact_email: contactEmail,
     balance: Number(raw.balance || 0),
     sessionVersion: Number(raw.session_version || raw.sessionVersion || 1),
     account_status: raw.account_status || "active",
