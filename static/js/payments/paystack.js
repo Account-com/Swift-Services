@@ -80,11 +80,7 @@
   }
 
   function formatDateTime(value) {
-    if (!value) return "—";
-    const text = String(value);
-    const date = new Date(text.endsWith("Z") || text.includes("+") ? text : `${text}Z`);
-    if (Number.isNaN(date.getTime())) return text;
-    return date.toLocaleString();
+    return LS.formatDateTime ? LS.formatDateTime(value) : (value || "—");
   }
 
   function formatTransactionAmount(value) {

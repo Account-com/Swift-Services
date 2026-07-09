@@ -250,7 +250,7 @@ function updateDeleteMethodButtonVisibility() {
           <div class="wHistoryRow">
             <div class="wHistLeft">
               <div class="wHistAmt">${LS.money(item.amount)} • ${LS.escapeHtml(item.network || "")}</div>
-              <div class="wHistDate">${LS.escapeHtml(item.created_at || "")}</div>
+              <div class="wHistDate">${LS.escapeHtml(LS.formatDateTime ? LS.formatDateTime(item.created_at) : (item.created_at || ""))}</div>
             </div>
             <div class="wHistRight">
               <span class="wBadge ${badgeClass}">${LS.escapeHtml(item.status)}</span>

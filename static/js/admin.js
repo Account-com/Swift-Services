@@ -23,9 +23,17 @@ function esc(s) {
 
 function fmtISO(iso) {
   if (!iso) return "";
-  const d = new Date(iso + "Z");
+  const text = String(iso).trim();
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text) ? text : `${text}Z`;
+  const d = new Date(normalized);
   if (isNaN(d.getTime())) return iso;
-  return d.toLocaleString();
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(d);
 }
 
 function cap(s) {

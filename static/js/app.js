@@ -1,5 +1,36 @@
 const API_BASE = window.location.origin;
 
+function parseServerDate(value) {
+  if (!value) return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text) ? text : `${text}Z`;
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDateTime(value, fallback = "") {
+  const date = parseServerDate(value);
+  if (!date) return value ? String(value) : fallback;
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatDate(value, fallback = "-") {
+  const date = parseServerDate(value);
+  if (!date) return value ? String(value) : fallback;
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
 let currentUser = null;
 let messages = [];
 let heroTimer = null;
@@ -937,8 +968,7 @@ function getFilteredMessages(list = null) {
 
 function renderMessageCard(message) {
   const meta = getMessageCategoryMeta(message.category || message.type || "system");
-  const d = new Date(message.date || message.created_at || Date.now());
-  const timeText = Number.isNaN(d.getTime()) ? "" : d.toLocaleString();
+  const timeText = formatDateTime(message.date || message.created_at || Date.now());
   const readClass = message.read ? "isRead" : "isUnread";
 
   return `
@@ -1333,8 +1363,7 @@ async function openMessageDetail(message) {
   if (titleEl) titleEl.textContent = message.title || "Message";
   if (bodyEl) bodyEl.textContent = message.text || message.body || "";
   if (timeEl) {
-    const d = new Date(message.date || message.created_at || Date.now());
-    timeEl.textContent = Number.isNaN(d.getTime()) ? "" : d.toLocaleString();
+    timeEl.textContent = formatDateTime(message.date || message.created_at || Date.now());
   }
   if (catEl) {
     catEl.className = `messageDetailCategory tone-${meta.tone}`;
@@ -2036,7 +2065,7 @@ function updateHomeWidgets() {
 
 function updateMePage() {
   const fullName = [currentUser?.firstname, currentUser?.surname].filter(Boolean).join(" ").trim();
-  const joined = currentUser?.created_at ? new Date(currentUser.created_at).toLocaleDateString() : "-";
+  const joined = currentUser?.created_at ? formatDate(currentUser.created_at) : "-";
   const pendingCount = Number(currentUser?.pending_withdrawal_count || 0);
   const pendingTotal = Number(currentUser?.pending_withdrawal_total || 0);
   const premiumUi = getPremiumAccessUi();

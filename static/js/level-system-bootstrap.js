@@ -29,6 +29,37 @@
     return parseJSON(localStorage.getItem("currentUser"), null);
   }
 
+  function parseServerDate(value) {
+    if (!value) return null;
+    const text = String(value).trim();
+    if (!text) return null;
+    const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text) ? text : `${text}Z`;
+    const date = new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function formatDateTime(value, fallback = "—") {
+    const date = parseServerDate(value);
+    if (!date) return value ? String(value) : fallback;
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  function formatDate(value, fallback = "—") {
+    const date = parseServerDate(value);
+    if (!date) return value ? String(value) : fallback;
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(date);
+  }
+
   function saveCurrentUser() {
     if (!state.currentUser) return;
     localStorage.setItem("currentUser", JSON.stringify(state.currentUser));
@@ -320,6 +351,9 @@
     apiGet,
     money,
     escapeHtml,
+    parseServerDate,
+    formatDateTime,
+    formatDate,
     toast,
     goToPage,
     setPaymentContext,

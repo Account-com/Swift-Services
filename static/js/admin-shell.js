@@ -60,9 +60,17 @@
 
   function fmtDate(value) {
     if (!value) return "—";
-    const d = new Date(value.endsWith("Z") ? value : `${value}Z`);
+    const text = String(value).trim();
+    const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text) ? text : `${text}Z`;
+    const d = new Date(normalized);
     if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleString();
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(d);
   }
 
   function humanizeStatus(value) {
