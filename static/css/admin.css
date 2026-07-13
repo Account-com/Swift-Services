@@ -2877,11 +2877,19 @@ textarea:focus-visible {
   min-width: 280px;
 }
 
+.adminDatePresetChips {
+  max-width: 520px;
+}
+
 .adminDateRangeControls {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.adminCustomDateControls {
+  margin-top: 8px;
 }
 
 .adminDateField {
@@ -2905,8 +2913,7 @@ textarea:focus-visible {
   color: var(--admin-text);
 }
 
-.adminDateInput:disabled,
-.adminDateReset:disabled {
+.adminDateInput:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }

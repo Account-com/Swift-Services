@@ -22,10 +22,12 @@
       paymentsQuery: "",
       paymentsStatus: "all",
       paymentsType: "all",
+      paymentsDatePreset: "all_time",
       paymentsDateStart: "",
       paymentsDateEnd: "",
       withdrawalsQuery: "",
       withdrawalsStatus: "pending",
+      withdrawalsDatePreset: "all_time",
       withdrawalsDateStart: "",
       withdrawalsDateEnd: "",
       usersQuery: "",
@@ -44,6 +46,15 @@
     isRefreshing: false,
     loadingLabel: "",
   };
+
+  const DATE_PRESETS = [
+    ["today", "Today"],
+    ["last_7_days", "Last 7 days"],
+    ["this_month", "This Month"],
+    ["last_month", "Last Month"],
+    ["all_time", "All time"],
+    ["custom", "Custom"],
+  ];
 
   function $(selector) {
     return document.querySelector(selector);
@@ -87,11 +98,54 @@
 
   function dateInputValue(value) {
     const d = parseDate(value);
-    return d ? d.toISOString().slice(0, 10) : "";
+    return d ? formatDateInputLocal(d) : "";
+  }
+
+  function formatDateInputLocal(value) {
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 
   function todayInputValue() {
-    return new Date().toISOString().slice(0, 10);
+    return formatDateInputLocal(new Date());
+  }
+
+  function addDays(value, days) {
+    const d = new Date(value);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  function presetDateRange(preset) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    if (preset === "today") {
+      const date = formatDateInputLocal(today);
+      return { start: date, end: date };
+    }
+
+    if (preset === "last_7_days") {
+      return { start: formatDateInputLocal(addDays(today, -6)), end: formatDateInputLocal(today) };
+    }
+
+    if (preset === "this_month") {
+      return { start: formatDateInputLocal(new Date(year, month, 1)), end: formatDateInputLocal(today) };
+    }
+
+    if (preset === "last_month") {
+      return {
+        start: formatDateInputLocal(new Date(year, month - 1, 1)),
+        end: formatDateInputLocal(new Date(year, month, 0)),
+      };
+    }
+
+    return { start: "", end: "" };
   }
 
   function clampDateValue(value, min, max) {
@@ -115,6 +169,7 @@
   }
 
   function withinDateRange(item, start, end) {
+    if (!start && !end) return true;
     const rowDate = dateInputValue(item.created_at || item.requested_at || item.paid_at || item.verified_at);
     if (!rowDate) return false;
     if (start && rowDate < start) return false;
@@ -122,20 +177,29 @@
     return true;
   }
 
-  function bindDateRangeFilter(config) {
+  function bindDatePresetFilter(config) {
+    const presetWrap = $(`#${config.presetId}`);
     const startInput = $(`#${config.startId}`);
     const endInput = $(`#${config.endId}`);
-    const resetButton = $(`#${config.resetId}`);
-    if (!startInput || !endInput || !resetButton) return;
+    const customWrap = $(`#${config.customId}`);
+    if (!presetWrap || !startInput || !endInput || !customWrap) return;
 
     const bounds = dateBounds(config.items || []);
     const disabled = bounds.disabled;
-    const start = clampDateValue(state.filters[config.startKey], bounds.min, bounds.max);
-    let end = clampDateValue(state.filters[config.endKey], bounds.min, bounds.max);
+    const activePreset = state.filters[config.presetKey] || "all_time";
+    const presetRange = activePreset === "custom" ? null : presetDateRange(activePreset);
+    let start = activePreset === "custom" ? state.filters[config.startKey] : presetRange.start;
+    let end = activePreset === "custom" ? state.filters[config.endKey] : presetRange.end;
+
+    if (activePreset === "custom") {
+      start = clampDateValue(start, bounds.min, bounds.max);
+      end = clampDateValue(end, bounds.min, bounds.max);
+    }
     if (start && end && end < start) end = start;
 
     state.filters[config.startKey] = start;
     state.filters[config.endKey] = end;
+    customWrap.hidden = activePreset !== "custom";
 
     [startInput, endInput].forEach((input) => {
       input.min = bounds.min;
@@ -147,10 +211,20 @@
     endInput.value = end;
     endInput.min = start || bounds.min;
     startInput.max = end || bounds.max;
-    resetButton.disabled = disabled || (!start && !end);
+
+    renderFilterChips(`#${config.presetId}`, DATE_PRESETS, activePreset, (value) => {
+      state.filters[config.presetKey] = value;
+      if (value !== "custom") {
+        const nextRange = presetDateRange(value);
+        state.filters[config.startKey] = nextRange.start;
+        state.filters[config.endKey] = nextRange.end;
+      }
+      config.render();
+    });
 
     startInput.onchange = (event) => {
       const nextStart = clampDateValue(event.target.value || "", bounds.min, bounds.max);
+      state.filters[config.presetKey] = "custom";
       state.filters[config.startKey] = nextStart;
       if (state.filters[config.endKey] && nextStart && state.filters[config.endKey] < nextStart) {
         state.filters[config.endKey] = nextStart;
@@ -160,16 +234,11 @@
 
     endInput.onchange = (event) => {
       const nextEnd = clampDateValue(event.target.value || "", bounds.min, bounds.max);
+      state.filters[config.presetKey] = "custom";
       state.filters[config.endKey] = nextEnd;
       if (state.filters[config.startKey] && nextEnd && state.filters[config.startKey] > nextEnd) {
         state.filters[config.startKey] = nextEnd;
       }
-      config.render();
-    };
-
-    resetButton.onclick = () => {
-      state.filters[config.startKey] = "";
-      state.filters[config.endKey] = "";
       config.render();
     };
   }
@@ -1237,11 +1306,13 @@ function persistRememberedUsername(username) {
       renderPaymentsTab();
     });
 
-    bindDateRangeFilter({
+    bindDatePresetFilter({
       items: state.payments,
+      presetId: "paymentsDatePresetFilters",
+      customId: "paymentsCustomDateRange",
       startId: "paymentsDateStart",
       endId: "paymentsDateEnd",
-      resetId: "paymentsDateReset",
+      presetKey: "paymentsDatePreset",
       startKey: "paymentsDateStart",
       endKey: "paymentsDateEnd",
       render: renderPaymentsTab,
@@ -1416,11 +1487,13 @@ function persistRememberedUsername(username) {
       renderWithdrawalsTab();
     });
 
-    bindDateRangeFilter({
+    bindDatePresetFilter({
       items: state.withdrawals,
+      presetId: "withdrawalsDatePresetFilters",
+      customId: "withdrawalsCustomDateRange",
       startId: "withdrawalsDateStart",
       endId: "withdrawalsDateEnd",
-      resetId: "withdrawalsDateReset",
+      presetKey: "withdrawalsDatePreset",
       startKey: "withdrawalsDateStart",
       endKey: "withdrawalsDateEnd",
       render: renderWithdrawalsTab,
