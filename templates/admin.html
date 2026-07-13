@@ -403,6 +403,21 @@
                       <div class="adminToolbarLabel">Type</div>
                       <div class="adminFilterChips" id="paymentsTypeFilters"></div>
                     </div>
+
+                    <div class="adminToolbarBlock adminDateRangeBlock">
+                      <div class="adminToolbarLabel">Date Range</div>
+                      <div class="adminDateRangeControls">
+                        <label class="adminDateField">
+                          <span>From</span>
+                          <input id="paymentsDateStart" class="adminDateInput" type="date" />
+                        </label>
+                        <label class="adminDateField">
+                          <span>To</span>
+                          <input id="paymentsDateEnd" class="adminDateInput" type="date" />
+                        </label>
+                        <button id="paymentsDateReset" class="adminFilterChip adminDateReset" type="button">All Dates</button>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="adminTableShell">
@@ -449,6 +464,21 @@
                     <div class="adminToolbarBlock">
                       <div class="adminToolbarLabel">Status</div>
                       <div class="adminFilterChips" id="withdrawalsStatusFilters"></div>
+                    </div>
+
+                    <div class="adminToolbarBlock adminDateRangeBlock">
+                      <div class="adminToolbarLabel">Date Range</div>
+                      <div class="adminDateRangeControls">
+                        <label class="adminDateField">
+                          <span>From</span>
+                          <input id="withdrawalsDateStart" class="adminDateInput" type="date" />
+                        </label>
+                        <label class="adminDateField">
+                          <span>To</span>
+                          <input id="withdrawalsDateEnd" class="adminDateInput" type="date" />
+                        </label>
+                        <button id="withdrawalsDateReset" class="adminFilterChip adminDateReset" type="button">All Dates</button>
+                      </div>
                     </div>
                   </div>
 
@@ -500,7 +530,8 @@
                   </div>
 
                   <div class="adminTableShell">
-                    <div class="adminTableHead">
+                    <div class="adminTableHead adminUsersTableHead">
+                      <div>Name</div>
                       <div>User</div>
                       <div>Status</div>
                       <div>Balance</div>
@@ -508,7 +539,6 @@
                       <div>Access</div>
                       <div>Last Seen</div>
                       <div>Actions</div>
-                      <div></div>
                     </div>
                     <div id="usersRows" class="adminTableBody"></div>
                   </div>

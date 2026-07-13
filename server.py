@@ -2570,6 +2570,8 @@ def admin_users():
     rows = conn.execute("""
         SELECT
             user_id,
+            firstname,
+            surname,
             phone,
             COALESCE(NULLIF(TRIM(contact_email), ''), email) AS email,
             COALESCE(NULLIF(TRIM(contact_email), ''), email) AS contact_email,
@@ -2712,6 +2714,8 @@ def admin_users_full():
     rows = conn.execute("""
         SELECT
             user_id,
+            firstname,
+            surname,
             phone,
             COALESCE(NULLIF(TRIM(contact_email), ''), email) AS email,
             COALESCE(NULLIF(TRIM(contact_email), ''), email) AS contact_email,

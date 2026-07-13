@@ -22,8 +22,12 @@
       paymentsQuery: "",
       paymentsStatus: "all",
       paymentsType: "all",
+      paymentsDateStart: "",
+      paymentsDateEnd: "",
       withdrawalsQuery: "",
       withdrawalsStatus: "pending",
+      withdrawalsDateStart: "",
+      withdrawalsDateEnd: "",
       usersQuery: "",
       usersStatus: "all",
       riskQuery: "",
@@ -71,6 +75,103 @@
       hour: "numeric",
       minute: "2-digit",
     }).format(d);
+  }
+
+  function parseDate(value) {
+    if (!value) return null;
+    const text = String(value).trim();
+    const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text) ? text : `${text}Z`;
+    const d = new Date(normalized);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function dateInputValue(value) {
+    const d = parseDate(value);
+    return d ? d.toISOString().slice(0, 10) : "";
+  }
+
+  function todayInputValue() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function clampDateValue(value, min, max) {
+    if (!value) return "";
+    if (min && value < min) return min;
+    if (max && value > max) return max;
+    return value;
+  }
+
+  function dateBounds(items) {
+    const dates = (Array.isArray(items) ? items : [])
+      .map((item) => dateInputValue(item.created_at || item.requested_at || item.paid_at || item.verified_at))
+      .filter(Boolean)
+      .sort();
+
+    if (!dates.length) {
+      return { min: "", max: "", disabled: true };
+    }
+
+    return { min: dates[0], max: todayInputValue(), disabled: false };
+  }
+
+  function withinDateRange(item, start, end) {
+    const rowDate = dateInputValue(item.created_at || item.requested_at || item.paid_at || item.verified_at);
+    if (!rowDate) return false;
+    if (start && rowDate < start) return false;
+    if (end && rowDate > end) return false;
+    return true;
+  }
+
+  function bindDateRangeFilter(config) {
+    const startInput = $(`#${config.startId}`);
+    const endInput = $(`#${config.endId}`);
+    const resetButton = $(`#${config.resetId}`);
+    if (!startInput || !endInput || !resetButton) return;
+
+    const bounds = dateBounds(config.items || []);
+    const disabled = bounds.disabled;
+    const start = clampDateValue(state.filters[config.startKey], bounds.min, bounds.max);
+    let end = clampDateValue(state.filters[config.endKey], bounds.min, bounds.max);
+    if (start && end && end < start) end = start;
+
+    state.filters[config.startKey] = start;
+    state.filters[config.endKey] = end;
+
+    [startInput, endInput].forEach((input) => {
+      input.min = bounds.min;
+      input.max = bounds.max;
+      input.disabled = disabled;
+    });
+
+    startInput.value = start;
+    endInput.value = end;
+    endInput.min = start || bounds.min;
+    startInput.max = end || bounds.max;
+    resetButton.disabled = disabled || (!start && !end);
+
+    startInput.onchange = (event) => {
+      const nextStart = clampDateValue(event.target.value || "", bounds.min, bounds.max);
+      state.filters[config.startKey] = nextStart;
+      if (state.filters[config.endKey] && nextStart && state.filters[config.endKey] < nextStart) {
+        state.filters[config.endKey] = nextStart;
+      }
+      config.render();
+    };
+
+    endInput.onchange = (event) => {
+      const nextEnd = clampDateValue(event.target.value || "", bounds.min, bounds.max);
+      state.filters[config.endKey] = nextEnd;
+      if (state.filters[config.startKey] && nextEnd && state.filters[config.startKey] > nextEnd) {
+        state.filters[config.startKey] = nextEnd;
+      }
+      config.render();
+    };
+
+    resetButton.onclick = () => {
+      state.filters[config.startKey] = "";
+      state.filters[config.endKey] = "";
+      config.render();
+    };
   }
 
   function humanizeStatus(value) {
@@ -748,6 +849,16 @@ function persistRememberedUsername(username) {
     return user?.contact_email || user?.email || "";
   }
 
+  function userNameParts(user) {
+    const first = String(user?.firstname || user?.first_name || "").trim();
+    const last = String(user?.surname || user?.last_name || "").trim();
+    const full = String(user?.full_name || "").trim();
+    if (first || last) return { first: first || "—", last };
+    if (!full) return { first: "Not provided", last: "" };
+    const parts = full.split(/\s+/);
+    return { first: parts.shift() || full, last: parts.join(" ") };
+  }
+
   function animateValue(el, target) {
     if (!el) return;
     const start = Number(el.dataset.current || el.textContent || 0) || 0;
@@ -1074,7 +1185,13 @@ function persistRememberedUsername(username) {
         state.filters.paymentsType === "all" ||
         type.toLowerCase().replaceAll(" ", "_") === state.filters.paymentsType;
 
-      return matchesQuery && matchesStatus && matchesType;
+      const matchesDate = withinDateRange(
+        item,
+        state.filters.paymentsDateStart,
+        state.filters.paymentsDateEnd
+      );
+
+      return matchesQuery && matchesStatus && matchesType && matchesDate;
     });
   }
 
@@ -1118,6 +1235,16 @@ function persistRememberedUsername(username) {
     ], state.filters.paymentsType, (value) => {
       state.filters.paymentsType = value;
       renderPaymentsTab();
+    });
+
+    bindDateRangeFilter({
+      items: state.payments,
+      startId: "paymentsDateStart",
+      endId: "paymentsDateEnd",
+      resetId: "paymentsDateReset",
+      startKey: "paymentsDateStart",
+      endKey: "paymentsDateEnd",
+      render: renderPaymentsTab,
     });
 
     const wrap = $("#paymentsRows");
@@ -1252,7 +1379,12 @@ function persistRememberedUsername(username) {
     return state.withdrawals.filter((item) => {
       const matchesQuery = !q || JSON.stringify(item).toLowerCase().includes(q);
       const matchesStatus = state.filters.withdrawalsStatus === "all" || String(item.status || "").toLowerCase() === state.filters.withdrawalsStatus;
-      return matchesQuery && matchesStatus;
+      const matchesDate = withinDateRange(
+        item,
+        state.filters.withdrawalsDateStart,
+        state.filters.withdrawalsDateEnd
+      );
+      return matchesQuery && matchesStatus && matchesDate;
     });
   }
 
@@ -1282,6 +1414,16 @@ function persistRememberedUsername(username) {
     ], state.filters.withdrawalsStatus, (value) => {
       state.filters.withdrawalsStatus = value;
       renderWithdrawalsTab();
+    });
+
+    bindDateRangeFilter({
+      items: state.withdrawals,
+      startId: "withdrawalsDateStart",
+      endId: "withdrawalsDateEnd",
+      resetId: "withdrawalsDateReset",
+      startKey: "withdrawalsDateStart",
+      endKey: "withdrawalsDateEnd",
+      render: renderWithdrawalsTab,
     });
 
     const rows = filteredWithdrawals();
@@ -1453,8 +1595,14 @@ function persistRememberedUsername(username) {
 
     wrap.innerHTML = rows.length
       ? rows
-          .map((user) => `
-            <div class="adminTableRow" data-user-id="${escapeHtml(user.user_id)}">
+          .map((user) => {
+            const name = userNameParts(user);
+            return `
+            <div class="adminTableRow adminUsersTableRow" data-user-id="${escapeHtml(user.user_id)}">
+              <div class="adminCell adminNameCell" data-label="Name">
+                <div class="adminCellPrimary">${escapeHtml(name.first)}</div>
+                ${name.last ? `<div class="adminCellSub">${escapeHtml(name.last)}</div>` : ""}
+              </div>
               <div class="adminCell" data-label="User">
                 <div class="adminCellPrimary">${escapeHtml(user.phone)}</div>
                 <div class="adminCellSub">${escapeHtml(user.user_id)}</div>
@@ -1485,9 +1633,9 @@ function persistRememberedUsername(username) {
                   <button class="adminActionBtn danger" type="button" data-user-force="${escapeHtml(user.user_id)}">Force Logout</button>
                 </div>
               </div>
-              <div class="adminCell"></div>
             </div>
-          `)
+          `;
+          })
           .join("")
       : `<div class="adminEmptyState"><div class="adminEmptyStateTitle">No users match this filter</div><div class="adminEmptyStateText">Change the filters or search query.</div></div>`;
 
