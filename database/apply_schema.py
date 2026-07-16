@@ -43,6 +43,13 @@ def apply_schema() -> None:
         # Existing projects might already have users without these columns.
         ensure_column(conn, "users", "balance", "REAL DEFAULT 0")
         ensure_column(conn, "users", "email", "TEXT")
+        ensure_column(conn, "users", "firstname", "TEXT")
+        ensure_column(conn, "users", "surname", "TEXT")
+        ensure_column(conn, "users", "full_name", "TEXT")
+        conn.execute("""
+            UPDATE users SET full_name = NULLIF(TRIM(COALESCE(firstname, '') || ' ' || COALESCE(surname, '')), '')
+            WHERE (full_name IS NULL OR TRIM(full_name) = '')
+        """)
         ensure_user_email_columns(conn)
         backfill_user_email_fields(conn)
         ensure_column(conn, "users", "current_active_level_id", "INTEGER")

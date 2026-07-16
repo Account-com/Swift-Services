@@ -1332,9 +1332,9 @@ function persistRememberedUsername(username) {
             const isManualPending = isManual && String(item.status || "").toLowerCase() === "pending";
             return `
               <div class="adminTableRow adminPaymentsTableRow" data-payment-ref="${escapeHtml(item.reference)}">
+                <div class="adminCell adminNameCell" data-label="Name"><div class="adminCellPrimary">${escapeHtml(item.full_name || "N/A")}</div></div>
                 <div class="adminCell" data-label="User">
                   <div class="adminCellPrimary">${escapeHtml(item.user_id || "—")}</div>
-                  ${item.full_name ? `<div class="adminCellSub">${escapeHtml(item.full_name)}</div>` : ""}
                 </div>
                 <div class="adminCell" data-label="Type">
                   <div class="adminCellPrimary">${escapeHtml(typeLabel)}</div>
@@ -1507,7 +1507,8 @@ function persistRememberedUsername(username) {
           .map((item) => {
             const userState = item.user_state || {};
             return `
-              <div class="adminTableRow" data-withdrawal-id="${escapeHtml(item.id)}">
+              <div class="adminTableRow adminWithdrawalsTableRow" data-withdrawal-id="${escapeHtml(item.id)}">
+                <div class="adminCell adminNameCell" data-label="Name"><div class="adminCellPrimary">${escapeHtml(item.user_state?.full_name || [item.user_state?.firstname, item.user_state?.surname].filter(Boolean).join(" ") || "N/A")}</div></div>
                 <div class="adminCell" data-label="User">
                   <div class="adminCellPrimary">${escapeHtml(item.user_id)}</div>
                   <div class="adminCellSub">${escapeHtml(userState.phone || "No phone")}</div>

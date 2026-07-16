@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT,
     balance REAL DEFAULT 0,
     email TEXT,
+    full_name TEXT,
     contact_email TEXT,
     payment_email TEXT,
     current_active_level_id INTEGER,

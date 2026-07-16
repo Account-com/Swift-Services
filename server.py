@@ -290,6 +290,13 @@ def init_db():
     # ADMIN / SECURITY USER FIELDS
     ensure_column(conn, "users", "firstname", "TEXT")
     ensure_column(conn, "users", "surname", "TEXT")
+    ensure_column(conn, "users", "full_name", "TEXT")
+    conn.execute("""
+        UPDATE users
+        SET full_name = NULLIF(TRIM(COALESCE(firstname, '') || ' ' || COALESCE(surname, '')), '')
+        WHERE (full_name IS NULL OR TRIM(full_name) = '')
+          AND (TRIM(COALESCE(firstname, '')) <> '' OR TRIM(COALESCE(surname, '')) <> '')
+    """)
     ensure_column(conn, "users", "account_status", "TEXT NOT NULL DEFAULT 'active'")
     ensure_column(conn, "users", "can_login", "INTEGER NOT NULL DEFAULT 1")
     ensure_column(conn, "users", "can_tasks", "INTEGER NOT NULL DEFAULT 1")
@@ -1173,6 +1180,7 @@ def serialize_user_admin(row):
     data = dict(row)
     data.pop("payment_email", None)
     data["email"] = data.get("contact_email") or data.get("email")
+    data["full_name"] = data.get("full_name") or " ".join(filter(None, [data.get("firstname"), data.get("surname")])) or "N/A"
     data["can_login"] = bool(data.get("can_login"))
     data["can_tasks"] = bool(data.get("can_tasks"))
     data["can_deposit"] = bool(data.get("can_deposit"))
@@ -2946,6 +2954,20 @@ def admin_payments_full():
             continue
         seen_refs.add(ref)
         rows.append(serialized)
+
+    user_ids = {str(item.get("user_id")) for item in rows if item.get("user_id")}
+    if user_ids:
+        placeholders = ",".join("?" for _ in user_ids)
+        user_rows = conn.execute(
+            f"SELECT user_id, full_name, firstname, surname FROM users WHERE user_id IN ({placeholders})",
+            tuple(user_ids),
+        ).fetchall()
+        names = {
+            row["user_id"]: row["full_name"] or " ".join(filter(None, [row["firstname"], row["surname"]])) or "N/A"
+            for row in user_rows
+        }
+        for item in rows:
+            item["full_name"] = names.get(item.get("user_id"), item.get("full_name") or "N/A")
 
     rows.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
     conn.close()

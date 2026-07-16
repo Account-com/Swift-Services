@@ -939,7 +939,12 @@ textarea {
 
 .adminPaymentsTableHead,
 .adminPaymentsTableRow {
-  grid-template-columns: 1.05fr 0.9fr 0.55fr 0.8fr 0.8fr 1.2fr 0.8fr 1fr;
+  grid-template-columns: minmax(120px, 200px) 1.05fr 0.9fr 0.55fr 0.8fr 0.8fr 1.2fr 0.8fr 1fr;
+}
+
+.adminWithdrawalsTableHead,
+.adminWithdrawalsTableRow {
+  grid-template-columns: minmax(120px, 200px) 1.05fr 0.9fr 0.9fr 0.9fr 1.1fr 0.8fr 0.8fr 1fr;
 }
 
 .adminTableHead {
@@ -2979,7 +2984,7 @@ textarea:focus-visible {
 
 .adminUsersTableHead,
 .adminUsersTableRow {
-  grid-template-columns: minmax(104px, 0.9fr) minmax(118px, 0.95fr) minmax(88px, 0.72fr) minmax(98px, 0.78fr) minmax(104px, 0.82fr) minmax(118px, 0.94fr) minmax(124px, 1fr) minmax(158px, 1.1fr);
+  grid-template-columns: minmax(120px, 200px) minmax(118px, 0.95fr) minmax(88px, 0.72fr) minmax(98px, 0.78fr) minmax(104px, 0.82fr) minmax(118px, 0.94fr) minmax(124px, 1fr) minmax(158px, 1.1fr);
 }
 
 .adminNameCell .adminCellPrimary,
@@ -2987,6 +2992,8 @@ textarea:focus-visible {
   overflow-wrap: anywhere;
   word-break: normal;
 }
+
+.adminNameCell { min-width: 120px; max-width: 200px; white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
 
 @media (max-width: 1180px) {
   .adminUsersTableRow {
